@@ -1,0 +1,2877 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#3b82f6">
+<title>سامانه هوشمند انبارداری حرفه‌ای v3</title>
+<meta name="description" content="انبارداری چندکاربره — آماده دسکتاپ و PWA">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Vazirmatn',sans-serif;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#f0f4f8;--card:#ffffff;--text:#1a202c;--muted:#64748b;
+  --primary:#3b82f6;--primary-dark:#2563eb;--success:#10b981;
+  --warning:#f59e0b;--danger:#ef4444;--info:#06b6d4;--purple:#8b5cf6;
+  --border:#e2e8f0;--shadow:0 4px 12px rgba(0,0,0,.08);--radius:14px;
+  --low-threshold:5;
+}
+body.dark{
+  --bg:#0f172a;--card:#1e293b;--text:#f1f5f9;--muted:#94a3b8;
+  --border:#334155;--shadow:0 4px 16px rgba(0,0,0,.35);
+}
+body{background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s;padding-bottom:72px}
+.container{max-width:1280px;margin:0 auto;padding:12px}
+
+/* Header */
+header{background:linear-gradient(135deg,#3b82f6 0%,#8b5cf6 100%);color:#fff;padding:14px 18px;border-radius:var(--radius);margin-bottom:14px;box-shadow:var(--shadow);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+header h1{font-size:1.15rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.header-actions{display:flex;gap:6px;align-items:center}
+.icon-btn{background:rgba(255,255,255,.18);border:none;color:#fff;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:1.05rem;transition:.2s;display:flex;align-items:center;justify-content:center}
+.icon-btn:hover{background:rgba(255,255,255,.3)}
+.icon-btn:active{transform:scale(.92)}
+
+/* Tabs */
+.desktop-tabs{display:flex;gap:4px;background:var(--card);padding:6px;border-radius:var(--radius);margin-bottom:14px;box-shadow:var(--shadow);overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.desktop-tabs::-webkit-scrollbar{display:none}
+.tab{padding:9px 14px;border:none;background:transparent;color:var(--text);cursor:pointer;border-radius:10px;font-size:.8rem;font-weight:600;transition:.2s;white-space:nowrap;display:flex;align-items:center;gap:5px;font-family:inherit;flex-shrink:0}
+.tab:hover{background:var(--bg)}
+.tab.active{background:var(--primary);color:#fff}
+.counter-badge{background:var(--danger);color:#fff;border-radius:12px;padding:1px 7px;font-size:.65rem;font-weight:700;min-width:18px;text-align:center}
+
+/* Bottom Nav */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:6px 0 env(safe-area-inset-bottom);z-index:100;box-shadow:0 -4px 16px rgba(0,0,0,.08);height:64px}
+.bottom-nav button{flex:1;background:none;border:none;color:var(--muted);padding:4px 2px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.62rem;font-weight:500;transition:.2s;position:relative;font-family:inherit;min-width:0}
+.bottom-nav button.active{color:var(--primary)}
+.bottom-nav button.active::before{content:'';position:absolute;top:0;width:28px;height:3px;background:var(--primary);border-radius:0 0 4px 4px}
+.bottom-nav .icon{font-size:1.25rem;line-height:1.2}
+.bottom-nav .badge{position:absolute;top:0;right:18%;background:var(--danger);color:#fff;border-radius:10px;padding:0 5px;font-size:.58rem;min-width:16px;text-align:center;line-height:1.5}
+
+@media(min-width:900px){.bottom-nav{display:none}body{padding-bottom:24px}}
+@media(max-width:899px){
+  .desktop-tabs{padding:5px;margin-bottom:10px}
+  .tab{font-size:.72rem;padding:7px 10px}
+  header h1{font-size:.95rem}
+  .container{padding:8px}
+}
+
+/* Cards & Stats */
+.card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);margin-bottom:14px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+.stat-card{background:var(--card);padding:14px;border-radius:var(--radius);box-shadow:var(--shadow);border-right:4px solid var(--primary);transition:.2s}
+.stat-card:hover{transform:translateY(-2px)}
+.stat-card .label{color:var(--muted);font-size:.75rem;margin-bottom:4px;display:flex;align-items:center;gap:4px}
+.stat-card .value{font-size:1.15rem;font-weight:700}
+.stat-card.alert{border-right-color:var(--danger);animation:pulse-border 2s infinite}
+@keyframes pulse-border{0%,100%{border-right-color:var(--danger)}50%{border-right-color:var(--warning)}}
+
+/* Buttons */
+.btn{padding:9px 15px;border:none;border-radius:10px;cursor:pointer;font-weight:600;transition:.2s;font-size:.85rem;display:inline-flex;align-items:center;gap:5px;font-family:inherit}
+.btn:active{transform:scale(.96)}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-dark)}
+.btn-success{background:var(--success);color:#fff}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-warning{background:var(--warning);color:#fff}
+.btn-info{background:var(--info);color:#fff}
+.btn-purple{background:var(--purple);color:#fff}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}
+.btn-outline:hover{background:var(--bg)}
+.btn-sm{padding:5px 10px;font-size:.75rem}
+.btn-block{width:100%;justify-content:center}
+
+/* Forms */
+.form-group{margin-bottom:12px}
+.form-group label{display:block;margin-bottom:4px;font-weight:600;font-size:.8rem}
+.form-control{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--card);color:var(--text);font-size:.9rem;transition:.2s;font-family:inherit}
+.form-control:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+select.form-control{cursor:pointer}
+textarea.form-control{resize:vertical;min-height:70px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:700px){.grid-2,.grid-3{grid-template-columns:1fr}}
+
+/* Modal */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(6px)}
+.modal.active{display:flex}
+.modal-content{background:var(--card);border-radius:var(--radius);padding:20px;max-width:620px;width:100%;max-height:90vh;overflow-y:auto;position:relative;animation:modalIn .25s ease}
+@keyframes modalIn{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.modal-header h3{font-size:1.05rem}
+.close-btn{background:transparent;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.close-btn:hover{background:var(--bg)}
+
+/* Scan */
+.scan-container{position:relative;width:100%;max-width:480px;margin:0 auto;border-radius:var(--radius);overflow:hidden;background:#000}
+.scan-container video{border-radius:var(--radius);width:100%!important}
+.scan-result-indicator{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:75%;height:3px;background:var(--success);box-shadow:0 0 18px var(--success);opacity:0;transition:opacity .25s;pointer-events:none;z-index:10;border-radius:2px}
+.scan-result-indicator.flash{opacity:1}
+
+/* Badges */
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:.7rem;font-weight:600}
+.badge-success{background:rgba(16,185,129,.15);color:var(--success)}
+.badge-warning{background:rgba(245,158,11,.15);color:var(--warning)}
+.badge-danger{background:rgba(239,68,68,.15);color:var(--danger)}
+.badge-info{background:rgba(6,182,212,.15);color:var(--info)}
+.badge-purple{background:rgba(139,92,246,.15);color:var(--purple)}
+
+/* Lists & Tables */
+.item-row{display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr 1fr auto;gap:8px;padding:10px;border-bottom:1px solid var(--border);align-items:center;font-size:.82rem;transition:.15s}
+.item-row:hover{background:var(--bg)}
+@media(max-width:700px){.item-row{grid-template-columns:1fr 1fr;font-size:.78rem;gap:4px}}
+.empty-state{text-align:center;padding:28px 14px;color:var(--muted)}
+.empty-state .icon{font-size:2.8rem;margin-bottom:8px;opacity:.45}
+
+/* Tree */
+.tree-node{padding:9px 12px;margin:4px 0;background:var(--bg);border-radius:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;transition:.15s}
+.tree-children{padding-right:16px;border-right:2px solid var(--border);margin-right:8px}
+
+/* Alerts */
+.alert{padding:10px 14px;border-radius:10px;margin-bottom:12px;display:flex;align-items:flex-start;gap:8px;font-size:.82rem;line-height:1.5}
+.alert-info{background:rgba(59,130,246,.1);color:var(--primary);border-right:3px solid var(--primary)}
+.alert-success{background:rgba(16,185,129,.1);color:var(--success);border-right:3px solid var(--success)}
+.alert-warning{background:rgba(245,158,11,.1);color:var(--warning);border-right:3px solid var(--warning)}
+.alert-danger{background:rgba(239,68,68,.1);color:var(--danger);border-right:3px solid var(--danger)}
+
+/* Lookup */
+.lookup-card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);margin-top:12px;border:2px solid var(--border);animation:slideIn .3s}
+@keyframes slideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+.lookup-card.found{border-color:var(--success)}
+.lookup-card.notfound{border-color:var(--danger)}
+.lookup-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px}
+.lookup-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-bottom:10px}
+.lookup-field{padding:9px;background:var(--bg);border-radius:10px}
+.lookup-field .lbl{color:var(--muted);font-size:.7rem;margin-bottom:3px}
+.lookup-field .val{font-size:.9rem;font-weight:600;word-break:break-word}
+.lookup-barcode{font-family:monospace;font-size:1.15rem;color:var(--primary);font-weight:700;text-align:center;padding:12px;background:var(--bg);border-radius:10px;margin-bottom:12px;letter-spacing:1.5px}
+.status-big{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-weight:600;font-size:.82rem}
+.status-big.instock{background:rgba(16,185,129,.15);color:var(--success)}
+.status-big.low{background:rgba(245,158,11,.15);color:var(--warning)}
+.status-big.out{background:rgba(239,68,68,.15);color:var(--danger)}
+
+/* Storage */
+.storage-card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:12px;border-right:4px solid var(--primary)}
+.storage-card.success{border-right-color:var(--success)}
+.storage-card.danger{border-right-color:var(--danger)}
+.storage-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px}
+.storage-header h3{display:flex;align-items:center;gap:6px;font-size:.95rem}
+.storage-path{background:var(--bg);padding:9px 12px;border-radius:10px;font-family:monospace;font-size:.78rem;color:var(--muted);word-break:break-all;margin:6px 0}
+.storage-path.connected{color:var(--success);background:rgba(16,185,129,.1)}
+.storage-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.storage-info{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-top:10px}
+.storage-info-item{background:var(--bg);padding:9px;border-radius:10px;text-align:center}
+.storage-info-item .lbl{color:var(--muted);font-size:.7rem;margin-bottom:3px}
+.storage-info-item .val{font-size:.9rem;font-weight:700}
+
+/* Toggle */
+.toggle-switch{position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0}
+.toggle-switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;inset:0;background:var(--border);border-radius:24px;transition:.3s}
+.slider:before{position:absolute;content:"";height:18px;width:18px;right:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+input:checked+.slider{background:var(--success)}
+input:checked+.slider:before{transform:translateX(-18px)}
+.toggle-row{display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg);border-radius:10px;margin-bottom:8px;gap:10px}
+.toggle-row .label{font-weight:600;font-size:.85rem}
+.toggle-row .desc{font-size:.72rem;color:var(--muted);margin-top:2px}
+
+/* History & Scanned */
+.history-item,.scanned-item{padding:9px 11px;background:var(--bg);border-radius:10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;font-size:.8rem;gap:8px}
+.scanned-item{flex-wrap:wrap}
+.scanned-item .barcode{font-family:monospace;font-weight:700;color:var(--primary);font-size:.88rem}
+.scanned-list{max-height:320px;overflow-y:auto;margin-top:10px;border:1px solid var(--border);border-radius:10px;padding:4px}
+
+/* Chart */
+.chart-container{position:relative;height:260px;margin:14px 0}
+@media(max-width:600px){.chart-container{height:210px}}
+
+/* Toast */
+.toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);background:var(--card);color:var(--text);padding:12px 20px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.2);z-index:3000;display:flex;align-items:center;gap:8px;animation:toastIn .3s;max-width:92%;border-right:4px solid var(--success);font-size:.9rem}
+.toast.error{border-right-color:var(--danger)}
+.toast.warning{border-right-color:var(--warning)}
+.toast.info{border-right-color:var(--info)}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translate(-50%,0)}}
+
+/* Misc */
+.tab-content{display:none}
+.tab-content.active{display:block}
+.flex-between{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.manual-input{display:flex;gap:6px;margin-top:8px}
+.manual-input input{flex:1}
+.scan-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0;padding:12px;background:var(--bg);border-radius:12px}
+.scan-stat{text-align:center}
+.scan-stat .num{font-size:1.2rem;font-weight:700;color:var(--primary)}
+.scan-stat .lbl{font-size:.7rem;color:var(--muted);margin-top:2px}
+.scanning-indicator{display:inline-flex;align-items:center;gap:5px;color:var(--success);font-size:.78rem}
+.scanning-indicator .dot{width:7px;height:7px;background:var(--success);border-radius:50%;animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.autosave-indicator{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;background:rgba(16,185,129,.15);color:var(--success);border-radius:20px;font-size:.72rem;font-weight:600}
+.autosave-indicator .dot{width:6px;height:6px;background:var(--success);border-radius:50%;animation:pulse 2s infinite}
+.recent-item{padding:9px;background:var(--bg);border-radius:10px;margin-bottom:6px;cursor:pointer;transition:.15s}
+.recent-item:hover{background:var(--border)}
+.edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:600px){.edit-grid{grid-template-columns:1fr}}
+h3{font-size:1rem;margin-bottom:10px}
+h4{font-size:.9rem;margin:12px 0 8px}
+.low-stock-list{max-height:200px;overflow-y:auto}
+.low-stock-item{padding:8px 10px;background:rgba(245,158,11,.08);border-radius:8px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;font-size:.8rem;border-right:3px solid var(--warning)}
+.movement-item{padding:8px 10px;background:var(--bg);border-radius:8px;margin-bottom:5px;font-size:.78rem;display:flex;justify-content:space-between;gap:8px}
+.movement-item .type-in{color:var(--success);font-weight:700}
+.movement-item .type-out{color:var(--danger);font-weight:700}
+/* ===== Price Compare (اکالا / دیجی‌کالا) ===== */
+.price-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+@media(max-width:600px){.price-row{grid-template-columns:1fr}}
+.price-site{border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--bg)}
+.price-site h4{margin:0 0 6px;display:flex;align-items:center;gap:6px}
+.price-val{font-size:1.2rem;font-weight:800;color:var(--primary)}
+.price-status{font-size:.76rem;border-radius:8px;padding:4px 8px;margin:6px 0;display:inline-block}
+.price-status.ok{background:rgba(16,185,129,.15);color:var(--success)}
+.price-status.warn{background:rgba(245,158,11,.15);color:var(--warning)}
+.diff-good{background:rgba(16,185,129,.12);color:var(--success);border-radius:8px;padding:6px 8px;font-size:.8rem;margin-top:6px}
+.diff-bad{background:rgba(239,68,68,.12);color:var(--danger);border-radius:8px;padding:6px 8px;font-size:.8rem;margin-top:6px}
+.diff-neutral{background:rgba(100,116,139,.12);color:var(--muted);border-radius:8px;padding:6px 8px;font-size:.8rem;margin-top:6px}
+.price-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.price-link-btn{display:inline-flex;align-items:center;gap:4px;background:var(--primary);color:#fff!important;border-radius:8px;padding:6px 10px;font-size:.78rem;cursor:pointer;border:none;text-decoration:none}
+.manual-okala{display:flex;gap:6px;margin-top:8px}
+.manual-okala input{flex:1;min-width:0}
+.price-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.price-table th,.price-table td{border-bottom:1px solid var(--border);padding:6px 4px;text-align:center}
+.price-table th{color:var(--muted);font-weight:700}
+.price-record{border:1px solid var(--border);border-radius:12px;padding:10px;margin-bottom:8px;background:var(--bg)}
+.price-record-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.price-record .tag{background:rgba(59,130,246,.15);color:var(--primary);border-radius:8px;padding:2px 8px;font-size:.75rem;font-weight:700}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>📦 سامانه هوشمند انبارداری <small style="font-size:.7rem;opacity:.85;font-weight:500">v3</small></h1>
+    <div class="header-actions">
+      <select id="userSelect" class="form-control" style="width:auto;min-width:110px;padding:6px 10px;font-size:.78rem;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:10px" title="کاربر فعال"></select>
+      <button class="icon-btn" id="btnUsers" title="مدیریت کاربران">👤</button>
+      <button class="icon-btn" id="btnScanTop" title="اسکن سریع">📷</button>
+      <button class="icon-btn" id="btnDark" title="تم تاریک/روشن">🌙</button>
+      <button class="icon-btn" id="btnHelp" title="راهنما">❓</button>
+    </div>
+  </header>
+
+  <div class="desktop-tabs" id="desktopTabs">
+    <button class="tab active" data-tab="dashboard">📊 داشبورد</button>
+    <button class="tab" data-tab="structure">🏗️ ساختار</button>
+    <button class="tab" data-tab="entry">📝 ورود</button>
+    <button class="tab" data-tab="inventory">📦 موجودی</button>
+    <button class="tab" data-tab="analysis">📈 تحلیل</button>
+    <button class="tab" data-tab="scan">📷 شمارش <span class="counter-badge" id="scanCounterTab" style="display:none">0</span></button>
+    <button class="tab" data-tab="lookup">🔍 استعلام</button>
+    <button class="tab" data-tab="prices">💰 مقایسه قیمت</button>
+    <button class="tab" data-tab="movements">📋 حرکات</button>
+    <button class="tab" data-tab="storage">💾 ذخیره</button>
+    <button class="tab" data-tab="settings">⚙️ تنظیمات</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="tab-content active" id="dashboard">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="label">🏢 شرکت‌ها</div><div class="value" id="statCompanies">0</div></div>
+      <div class="stat-card"><div class="label">📦 محصولات</div><div class="value" id="statProducts">0</div></div>
+      <div class="stat-card"><div class="label">📋 اقلام</div><div class="value" id="statItems">0</div></div>
+      <div class="stat-card"><div class="label">💰 ارزش خرید</div><div class="value" id="statBuyValue">0 ت</div></div>
+      <div class="stat-card"><div class="label">💎 ارزش فروش</div><div class="value" id="statSellValue">0 ت</div></div>
+      <div class="stat-card" style="border-right-color:var(--success)"><div class="label">📈 سود بالقوه</div><div class="value" id="statProfit" style="color:var(--success)">0 ت</div></div>
+      <div class="stat-card" id="statLowCard" style="border-right-color:var(--warning)"><div class="label">⚠️ کم‌موجود</div><div class="value" id="statLow">0</div></div>
+      <div class="stat-card" style="border-right-color:var(--danger)"><div class="label">❌ ناموجود</div><div class="value" id="statOut">0</div></div>
+    </div>
+
+    <div class="card" id="lowStockAlert" style="display:none">
+      <h3>⚠️ هشدار موجودی کم</h3>
+      <div class="low-stock-list" id="lowStockList"></div>
+    </div>
+
+    <div class="card">
+      <h3>⚡ دسترسی سریع</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+        <button class="btn btn-primary" data-nav="entry">📝 ورود کالا</button>
+        <button class="btn btn-success" id="btnScanQuick">📷 اسکن</button>
+        <button class="btn btn-info" data-nav="lookup">🔍 استعلام</button>
+        <button class="btn btn-outline" data-nav="inventory">📦 موجودی</button>
+        <button class="btn btn-warning" data-nav="storage">💾 ذخیره</button>
+        <button class="btn btn-purple" data-nav="movements">📋 حرکات</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>📊 ارزش انبار به تفکیک شرکت</h3>
+      <div class="chart-container"><canvas id="dashboardChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- STRUCTURE -->
+  <div class="tab-content" id="structure">
+    <div class="grid-2">
+      <div class="card">
+        <h3>🏢 افزودن شرکت</h3>
+        <div class="form-group"><input type="text" id="newCompany" class="form-control" placeholder="نام شرکت"></div>
+        <button class="btn btn-primary" id="btnAddCompany">+ افزودن شرکت</button>
+      </div>
+      <div class="card">
+        <h3>📦 افزودن محصول</h3>
+        <div class="form-group"><select id="companySelect" class="form-control"><option value="">انتخاب شرکت...</option></select></div>
+        <div class="form-group"><input type="text" id="newProduct" class="form-control" placeholder="نام محصول"></div>
+        <div class="form-group"><input type="text" id="newProductUnit" class="form-control" placeholder="واحد (عدد، کیلو، متر...)" value="عدد"></div>
+        <div class="form-group"><input type="number" id="newProductMin" class="form-control" placeholder="حداقل موجودی هشدار" value="5" min="0"></div>
+        <button class="btn btn-primary" id="btnAddProduct">+ افزودن محصول</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="flex-between" style="margin-bottom:10px">
+        <h3>🌳 ساختار درختی</h3>
+        <input type="text" id="treeSearch" class="form-control" placeholder="جستجو در ساختار..." style="max-width:220px">
+      </div>
+      <div id="treeView"><div class="empty-state"><div class="icon">🌳</div>هنوز ساختاری ثبت نشده</div></div>
+    </div>
+  </div>
+
+  <!-- ENTRY -->
+  <div class="tab-content" id="entry">
+    <div class="card">
+      <h3>📝 ورود / افزایش موجودی</h3>
+      <div class="grid-3">
+        <div class="form-group"><label>شرکت *</label><select id="entryCompany" class="form-control"><option value="">انتخاب...</option></select></div>
+        <div class="form-group"><label>محصول *</label><select id="entryProduct" class="form-control"><option value="">انتخاب...</option></select></div>
+        <div class="form-group"><label>زیرشاخه / مدل</label><input type="text" id="entrySub" class="form-control" placeholder="اختیاری"></div>
+      </div>
+      <div class="grid-3">
+        <div class="form-group"><label>تعداد *</label><input type="number" id="entryQty" class="form-control" value="1" min="1"></div>
+        <div class="form-group"><label>قیمت خرید (تومان)</label><input type="number" id="entryBuy" class="form-control" value="0" min="0"></div>
+        <div class="form-group"><label>قیمت فروش (تومان)</label><input type="number" id="entrySell" class="form-control" value="0" min="0"></div>
+      </div>
+      <div class="grid-3">
+        <div class="form-group"><label>بارکد</label>
+          <div style="display:flex;gap:5px">
+            <input type="text" id="entryBarcode" class="form-control" placeholder="اسکن یا وارد کنید">
+            <button class="btn btn-success btn-sm" id="btnScanEntry" type="button">📷</button>
+          </div>
+        </div>
+        <div class="form-group"><label>محل نگهداری</label><input type="text" id="entryLocation" class="form-control" placeholder="قفسه، ردیف..."></div>
+        <div class="form-group"><label>یادداشت</label><input type="text" id="entryNote" class="form-control"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" id="btnAddItem">💾 ثبت کالا</button>
+        <button class="btn btn-outline" id="btnClearEntry">🧹 پاک‌کردن</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- INVENTORY -->
+  <div class="tab-content" id="inventory">
+    <div class="card">
+      <h3>🔎 فیلتر و جستجو</h3>
+      <div class="grid-3">
+        <div class="form-group"><input type="text" id="searchInput" class="form-control" placeholder="جستجو در نام، بارکد، محل..."></div>
+        <div class="form-group"><select id="filterCompany" class="form-control"><option value="">همه شرکت‌ها</option></select></div>
+        <div class="form-group"><select id="filterStatus" class="form-control">
+          <option value="">همه وضعیت‌ها</option>
+          <option value="instock">✓ موجود</option>
+          <option value="low">⚠️ کم‌موجود</option>
+          <option value="out">✗ اتمام</option>
+        </select></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="flex-between" style="margin-bottom:12px">
+        <h3>📋 لیست اقلام (<span id="itemCount">0</span>)</h3>
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-outline btn-sm" id="btnExportCSV">📄 CSV</button>
+          <button class="btn btn-outline btn-sm" id="btnExportExcel">📊 اکسل</button>
+        </div>
+      </div>
+      <div id="itemsList"></div>
+      <div style="margin-top:12px;padding:12px;background:var(--bg);border-radius:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;font-size:.82rem">
+        <div><small style="color:var(--muted)">جمع تعداد</small><div style="font-weight:700" id="sumQty">0</div></div>
+        <div><small style="color:var(--muted)">ارزش خرید</small><div style="font-weight:700" id="sumBuy">0 ت</div></div>
+        <div><small style="color:var(--muted)">ارزش فروش</small><div style="font-weight:700" id="sumSell">0 ت</div></div>
+        <div><small style="color:var(--muted)">سود بالقوه</small><div style="font-weight:700;color:var(--success)" id="sumProfit">0 ت</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANALYSIS -->
+  <div class="tab-content" id="analysis">
+    <div class="card">
+      <h3>📈 تحلیل و گزارشات هوشمند</h3>
+      <div id="analysisContent"><div class="empty-state"><div class="icon">📊</div>برای مشاهده تحلیل، اقلامی ثبت کنید</div></div>
+    </div>
+    <div class="card" id="analysisChartCard" style="display:none">
+      <h3>سود به تفکیک شرکت</h3>
+      <div class="chart-container"><canvas id="analysisChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- SCAN -->
+  <div class="tab-content" id="scan">
+    <div class="card">
+      <h3>📷 شمارش هوشمند با اسکن بارکد</h3>
+      <div class="alert alert-info">
+        <span>💡</span>
+        <span>بارکد را اسکن کنید. سیستم خودکار تعداد را می‌شمارد و کالاهای شناسایی‌شده را مشخص می‌کند. پس از اتمام، روی «ثبت در انبار» بزنید.</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+        <button class="btn btn-primary" id="btnStartScan">🎥 شروع اسکن</button>
+        <button class="btn btn-success" id="btnCommitScan">💾 ثبت در انبار</button>
+        <button class="btn btn-warning" id="btnClearScanned">🧹 پاک کردن</button>
+        <button class="btn btn-outline" id="btnExportScanned">📄 CSV</button>
+      </div>
+      <div class="scan-stats">
+        <div class="scan-stat"><div class="num" id="scannedTotal">0</div><div class="lbl">کل اسکن‌ها</div></div>
+        <div class="scan-stat"><div class="num" id="scannedUnique">0</div><div class="lbl">بارکد یکتا</div></div>
+        <div class="scan-stat"><div class="num" id="scannedItems">0</div><div class="lbl">شناسایی شده</div></div>
+      </div>
+      <div id="scannedListContainer">
+        <div class="empty-state"><div class="icon">📷</div>هنوز کالایی اسکن نشده</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOOKUP -->
+  <div class="tab-content" id="lookup">
+    <div class="card">
+      <h3>🔍 استعلام سریع موجودی</h3>
+      <div class="alert alert-info">
+        <span>💡</span>
+        <span>بارکد را اسکن یا تایپ کنید تا مشخصات کامل و وضعیت موجودی نمایش داده شود.</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <button class="btn btn-primary" id="btnLookupScan">🎥 اسکن با دوربین</button>
+        <button class="btn btn-outline" id="btnLookupFocus">⌨️ ورود دستی</button>
+        <button class="btn btn-outline" id="btnClearLookup">🧹 پاک کردن</button>
+      </div>
+      <div class="manual-input">
+        <input type="text" id="lookupManualInput" class="form-control" placeholder="بارکد را وارد کنید...">
+        <button class="btn btn-primary" id="btnLookupSearch">🔎 استعلام</button>
+      </div>
+      <div id="lookupScannerContainer" style="display:none;margin-top:12px">
+        <div class="scan-container">
+          <div id="qr-reader-lookup"></div>
+          <div class="scan-result-indicator" id="lookupScanIndicator"></div>
+        </div>
+        <div style="margin-top:8px;text-align:center">
+          <button class="btn btn-danger btn-sm" id="btnStopLookup">⏹ توقف اسکن</button>
+        </div>
+      </div>
+      <div id="lookupResult"></div>
+      <div id="recentLookups" style="margin-top:14px"></div>
+    </div>
+  </div>
+
+  <!-- MOVEMENTS -->
+  <div class="tab-content" id="movements">
+    <div class="card">
+      <div class="flex-between" style="margin-bottom:12px">
+        <h3>📋 تاریخچه حرکات انبار</h3>
+        <button class="btn btn-outline btn-sm" id="btnClearMovements">🧹 پاک تاریخچه</button>
+      </div>
+      <div class="alert alert-info"><span>💡</span><span>تمام ورودها، افزایش‌ها و کاهش‌های موجودی در اینجا ثبت می‌شود.</span></div>
+      <div id="movementsList"><div class="empty-state"><div class="icon">📋</div>هنوز حرکتی ثبت نشده</div></div>
+    </div>
+  </div>
+
+  <!-- STORAGE -->
+    <div class="tab-content" id="prices">
+    <div class="card">
+      <h3>💰 مقایسه قیمت با اکالا و دیجی‌کالا</h3>
+      <div class="form-group">
+        <label>نام کالا</label>
+        <input type="text" id="priceName" class="form-control" placeholder="مثلاً نوشابه پپسی ۱.۵ لیتری">
+      </div>
+      <div class="form-group">
+        <label>قیمت فروشگاه من (تومان)</label>
+        <input type="number" id="priceStore" class="form-control" placeholder="مثلاً 80000" min="0">
+      </div>
+      <div class="form-group">
+        <label>بارکد (اختیاری)</label>
+        <input type="text" id="priceBarcode" class="form-control" placeholder="6267771000000">
+      </div>
+      <button class="btn btn-primary" id="btnSearchPrice" onclick="searchPrices()">🔎 جستجوی قیمت</button>
+      <div id="priceResult" style="margin-top:12px"></div>
+    </div>
+    <div class="card">
+      <h3>📥 ورود دستی قیمت اکالا و پروکسی (اختیاری)</h3>
+      <div class="form-group">
+        <label>وارد کردن قیمت اکالا — هر خط: «نام کالا | قیمت»</label>
+        <textarea id="priceImportText" class="form-control" rows="4" placeholder="نوشابه پپسی ۱.۵ لیتری | 75000&#10;شیر پرچرب ۱ لیتری | 32000"></textarea>
+        <button class="btn btn-sm btn-primary" onclick="importOkalaPrices()" style="margin-top:6px">📥 وارد کردن قیمت‌ها</button>
+      </div>
+      <div class="form-group">
+        <label>پروکسی میانجی (اختیاری) — فقط برای دریافت زندهٔ اکالا؛ پروکسی باید خروجی JSON با فیلد price بدهد</label>
+        <input type="text" id="priceProxyUrl" class="form-control" placeholder="https://my-proxy.example.com/fetch?url=">
+        <button class="btn btn-sm btn-primary" onclick="savePriceProxy()" style="margin-top:6px">💾 ذخیره پروکسی</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>📋 کالاهای ذخیره‌شده</h3>
+      <div id="priceList"><p style="color:var(--muted)">هنوز کالایی بررسی نشده است.</p></div>
+    </div>
+  </div>
+  <div class="tab-content" id="storage">
+    <div class="card">
+      <h3>💾 مدیریت ذخیره‌سازی</h3>
+      <div class="alert alert-info">
+        <span>💡</span>
+        <span>داده‌ها به‌صورت خودکار در مرورگر ذخیره می‌شوند. برای پشتیبان دائمی از گزینه‌های زیر استفاده کنید.</span>
+      </div>
+
+      <div class="storage-card success">
+        <div class="storage-header">
+          <h3>📊 وضعیت ذخیره‌سازی</h3>
+          <span class="autosave-indicator"><span class="dot"></span>ذخیره خودکار فعال</span>
+        </div>
+        <div class="storage-info">
+          <div class="storage-info-item"><div class="lbl">فضای مصرفی</div><div class="val" id="storageUsed">0 KB</div></div>
+          <div class="storage-info-item"><div class="lbl">تعداد اقلام</div><div class="val" id="storageItems">0</div></div>
+          <div class="storage-info-item"><div class="lbl">آخرین ذخیره</div><div class="val" id="storageLastSave">-</div></div>
+          <div class="storage-info-item"><div class="lbl">فایل متصل</div><div class="val" id="storageFilePath">متصل نشده</div></div>
+        </div>
+      </div>
+
+      <div class="storage-card">
+        <div class="storage-header"><h3>📱 ذخیره دائم روی دستگاه</h3></div>
+        <div class="storage-path" id="storagePathDisplay">📁 <span id="storagePathText">هنوز فایلی انتخاب نشده</span></div>
+        <div class="storage-actions">
+          <button class="btn btn-primary" id="btnSaveToDevice">💾 ذخیره روی دستگاه</button>
+          <button class="btn btn-success" id="btnSaveToSame" style="display:none">🔄 ذخیره مجدد</button>
+          <button class="btn btn-info" id="btnLoadFromDevice">📂 بارگذاری از فایل</button>
+          <button class="btn btn-outline" id="btnClearHandle">🗑️ قطع اتصال</button>
+        </div>
+        <div style="margin-top:10px;padding:10px;background:var(--bg);border-radius:10px;font-size:.75rem;color:var(--muted)">
+          <strong>📌 نکته:</strong> در Chrome و Edge می‌توانید فایل را مستقیماً روی حافظه گوشی/کامپیوتر ذخیره کنید.
+        </div>
+      </div>
+
+      <div class="storage-card">
+        <div class="storage-header"><h3>📤 خروجی و ورودی</h3></div>
+        <div class="storage-actions">
+          <button class="btn btn-primary" id="btnExportJSON">📥 دانلود JSON</button>
+          <button class="btn btn-info" id="btnImportTrigger">📤 بارگذاری JSON</button>
+          <button class="btn btn-purple" id="btnBackup">🗃️ پشتیبان کامل</button>
+          <input type="file" id="importFile" accept=".json" style="display:none">
+        </div>
+      </div>
+
+      <div class="storage-card">
+        <div class="storage-header"><h3>⚙️ تنظیمات ذخیره خودکار</h3></div>
+        <div class="toggle-row">
+          <div><div class="label">ذخیره خودکار در مرورگر</div><div class="desc">هر تغییر بلافاصله در حافظه مرورگر ذخیره می‌شود</div></div>
+          <label class="toggle-switch"><input type="checkbox" id="autoSaveBrowser" checked><span class="slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div><div class="label">ذخیره خودکار روی دستگاه</div><div class="desc">پس از اتصال فایل، تغییرات خودکار ذخیره می‌شوند</div></div>
+          <label class="toggle-switch"><input type="checkbox" id="autoSaveDevice" checked><span class="slider"></span></label>
+        </div>
+      </div>
+
+      <div class="storage-card">
+        <div class="storage-header">
+          <h3>🕐 تاریخچه ذخیره‌سازی</h3>
+          <button class="btn btn-outline btn-sm" id="btnClearHistory">🧹</button>
+        </div>
+        <div id="storageHistory"><div class="empty-state" style="padding:14px"><div class="icon">🕐</div>تاریخچه‌ای نیست</div></div>
+      </div>
+
+      <div class="storage-card danger">
+        <div class="storage-header"><h3 style="color:var(--danger)">⚠️ منطقه خطر</h3></div>
+        <div class="alert alert-danger"><span>⚠️</span><span>این عملیات‌ها غیرقابل بازگشت هستند.</span></div>
+        <div class="storage-actions">
+          <button class="btn btn-danger" id="btnClearAll">🗑️ پاک کردن همه داده‌ها</button>
+          <button class="btn btn-outline" id="btnReset">🔄 بازنشانی کامل</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="tab-content" id="settings">
+    <div class="card">
+      <h3>⚙️ تنظیمات سامانه</h3>
+      <div class="form-group">
+        <label>آستانه هشدار موجودی کم (پیش‌فرض برای محصولات جدید)</label>
+        <input type="number" id="settingLowThreshold" class="form-control" value="5" min="0">
+      </div>
+      <div class="form-group">
+        <label>واحد پول</label>
+        <input type="text" id="settingCurrency" class="form-control" value="تومان">
+      </div>
+      <div class="toggle-row">
+        <div><div class="label">صدای بیپ هنگام اسکن</div><div class="desc">صدای کوتاه پس از اسکن موفق</div></div>
+        <label class="toggle-switch"><input type="checkbox" id="settingBeep" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div><div class="label">تم تاریک پیش‌فرض</div><div class="desc">شروع با تم تاریک</div></div>
+        <label class="toggle-switch"><input type="checkbox" id="settingDarkDefault"><span class="slider"></span></label>
+      </div>
+      <button class="btn btn-primary" id="btnSaveSettings" style="margin-top:12px">💾 ذخیره تنظیمات</button>
+    </div>
+    <div class="card">
+      <h3>ℹ️ درباره سامانه</h3>
+      <p style="font-size:.85rem;color:var(--muted);line-height:1.7">
+        سامانه هوشمند انبارداری حرفه‌ای – نسخه ۲.۰<br>
+        کاملاً آفلاین • ذخیره محلی • اسکن بارکد • تحلیل سود<br>
+        ساخته‌شده برای استفاده سریع و بدون نیاز به سرور
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- SCAN MODAL -->
+<div class="modal" id="scanModal">
+  <div class="modal-content" style="max-width:580px">
+    <div class="modal-header">
+      <h3>📷 اسکن بارکد</h3>
+      <button class="close-btn" id="btnCloseScan">✕</button>
+    </div>
+    <div class="form-group">
+      <label style="font-size:.78rem;color:var(--muted)">دوربین:</label>
+      <select id="cameraSelect" class="form-control"></select>
+    </div>
+    <div class="scan-container" style="margin-top:8px">
+      <div id="qr-reader"></div>
+      <div class="scan-result-indicator" id="scanIndicator"></div>
+    </div>
+    <div class="manual-input">
+      <input type="text" id="manualBarcode" class="form-control" placeholder="بارکد دستی...">
+      <button class="btn btn-primary" id="btnAddManual">افزودن</button>
+    </div>
+    <div style="margin-top:12px">
+      <div class="flex-between" style="margin-bottom:8px">
+        <strong>📋 اسکن‌شده‌ها (<span id="modalScanCount">0</span>)</strong>
+        <span class="scanning-indicator" id="scanningStatus" style="display:none"><span class="dot"></span>در حال اسکن...</span>
+      </div>
+      <div class="scanned-list" id="modalScannedList">
+        <div class="empty-state" style="padding:14px"><div class="icon">📷</div>هنوز اسکنی نشده</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+      <button class="btn btn-success" id="btnCommitFromModal">💾 ثبت در انبار</button>
+      <button class="btn btn-outline" id="btnCloseScan2">بستن</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal" id="editModal">
+  <div class="modal-content" style="max-width:640px">
+    <div class="modal-header">
+      <h3>✏️ ویرایش کالا</h3>
+      <button class="close-btn" id="btnCloseEdit">✕</button>
+    </div>
+    <div id="editForm"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+      <button class="btn btn-primary" id="btnSaveEdit">💾 ذخیره تغییرات</button>
+      <button class="btn btn-outline" id="btnCancelEdit">انصراف</button>
+    </div>
+  </div>
+</div>
+
+<!-- FIELD SCAN MODAL -->
+<div class="modal" id="fieldScanModal">
+  <div class="modal-content" style="max-width:480px">
+    <div class="modal-header">
+      <h3>📷 اسکن بارکد</h3>
+      <button class="close-btn" id="btnCloseFieldScan">✕</button>
+    </div>
+    <div class="scan-container">
+      <div id="qr-reader-edit"></div>
+      <div class="scan-result-indicator" id="editScanIndicator"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADJUST QTY MODAL -->
+<div class="modal" id="adjustModal">
+  <div class="modal-content" style="max-width:420px">
+    <div class="modal-header">
+      <h3>🔄 تنظیم موجودی</h3>
+      <button class="close-btn" id="btnCloseAdjust">✕</button>
+    </div>
+    <div id="adjustForm"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-primary" id="btnSaveAdjust">💾 اعمال</button>
+      <button class="btn btn-outline" id="btnCancelAdjust">انصراف</button>
+    </div>
+  </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav">
+  <button class="active" data-nav="dashboard"><span class="icon">📊</span><span>داشبورد</span></button>
+  <button data-nav="entry"><span class="icon">📝</span><span>ورود</span></button>
+  <button id="btnScanBottom"><span class="icon">📷</span><span>اسکن</span><span class="badge" id="scanCounterBottom" style="display:none">0</span></button>
+  <button data-nav="lookup"><span class="icon">🔍</span><span>استعلام</span></button>
+  <button data-nav="prices"><span class="icon">💰</span><span>قیمت</span></button>
+  <button data-nav="storage"><span class="icon">💾</span><span>ذخیره</span></button>
+</nav>
+
+<script>
+// ==================== STATE ====================
+const APP_VERSION = '3.0';
+const STORAGE_USERS = 'warehouseProUsers';
+const STORAGE_PREFIX = 'warehouseProV3_';
+
+const App = {
+  companies: [],
+  products: [],
+  items: [],
+  scanned: [],
+  movements: [],
+  storageHistory: [],
+  recentLookups: [],
+  settings: {
+    lowThreshold: 5,
+    currency: 'تومان',
+    beep: true,
+    darkDefault: false
+  },
+  autoSaveBrowser: true,
+  autoSaveDevice: true,
+  fileHandle: null,
+  currentEditId: null,
+  currentAdjustId: null,
+  entryScanCallback: null,
+  lastScannedCode: null,
+  lastScanTime: 0,
+  isScanning: false,
+  html5QrCode: null,
+  lookupScanner: null,
+  fieldScanner: null,
+  currentCameraId: null,
+  dashboardChart: null,
+  analysisChart: null,
+  // multi-user
+  currentUserId: 'default',
+  users: [{ id: 'default', name: 'مدیر', role: 'admin', createdAt: Date.now() }]
+};
+
+// پل ارتباطی برای Electron / دسکتاپ (بعداً با .exe)
+window.WarehouseBridge = {
+  getVersion: () => APP_VERSION,
+  getData: () => getExportPayload(),
+  setData: (data) => { applyImportedData(data, false); return true; },
+  getUser: () => App.users.find(u => u.id === App.currentUserId) || null
+};
+
+// ==================== UTILS ====================
+function uid() {
+  return Date.now() + Math.random().toString(36).slice(2, 9);
+}
+
+function fmt(n) {
+  return Number(n || 0).toLocaleString('fa-IR');
+}
+
+function nowFa() {
+  return new Date().toLocaleString('fa-IR');
+}
+
+function dateFa() {
+  return new Date().toLocaleDateString('fa-IR');
+}
+
+function timeFa() {
+  return new Date().toLocaleTimeString('fa-IR');
+}
+
+function showToast(msg, type = 'success') {
+  const old = document.querySelector('.toast');
+  if (old) old.remove();
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+  t.innerHTML = `<span>${icons[type] || '✅'}</span><span>${msg}</span>`;
+  document.body.appendChild(t);
+  setTimeout(() => {
+    t.style.opacity = '0';
+    t.style.transition = 'opacity .3s';
+    setTimeout(() => t.remove(), 300);
+  }, 2800);
+}
+
+function playBeep() {
+  if (!App.settings.beep) return;
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g);
+    g.connect(ctx.destination);
+    o.frequency.value = 980;
+    g.gain.value = 0.08;
+    o.start();
+    o.stop(ctx.currentTime + 0.09);
+  } catch (e) {}
+}
+
+function getLowThreshold(productId) {
+  const p = App.products.find(x => x.id === productId);
+  return p && p.minQty != null ? p.minQty : App.settings.lowThreshold;
+}
+
+function getStatus(item) {
+  if (item.qty <= 0) return 'out';
+  if (item.qty <= getLowThreshold(item.productId)) return 'low';
+  return 'instock';
+}
+
+function getStatusBadge(item) {
+  const s = getStatus(item);
+  if (s === 'out') return '<span class="badge badge-danger">اتمام</span>';
+  if (s === 'low') return '<span class="badge badge-warning">کم</span>';
+  return '<span class="badge badge-success">موجود</span>';
+}
+
+// ==================== MULTI-USER ====================
+function loadUsers() {
+  try {
+    const raw = localStorage.getItem(STORAGE_USERS);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length) App.users = parsed;
+    }
+    const uid = localStorage.getItem(STORAGE_PREFIX + 'currentUser');
+    if (uid && App.users.some(u => u.id === uid)) App.currentUserId = uid;
+  } catch (e) {}
+}
+
+function saveUsers() {
+  try {
+    localStorage.setItem(STORAGE_USERS, JSON.stringify(App.users));
+    localStorage.setItem(STORAGE_PREFIX + 'currentUser', App.currentUserId);
+  } catch (e) {}
+}
+
+function storageKey() {
+  return STORAGE_PREFIX + App.currentUserId;
+}
+
+function renderUserSelect() {
+  const sel = document.getElementById('userSelect');
+  if (!sel) return;
+  sel.innerHTML = App.users.map(u =>
+    `<option value="${u.id}" ${u.id === App.currentUserId ? 'selected' : ''}>${u.name}</option>`
+  ).join('');
+}
+
+function switchUser(userId) {
+  if (!App.users.some(u => u.id === userId)) return;
+  save(); // ذخیره کاربر فعلی
+  App.currentUserId = userId;
+  saveUsers();
+  // پاک‌سازی state و بارگذاری داده کاربر جدید
+  App.companies = []; App.products = []; App.items = [];
+  App.scanned = []; App.movements = []; App.storageHistory = [];
+  App.recentLookups = [];
+  loadData();
+  refreshSelects(); renderTree(); updateStats(); renderItems();
+  updateStorageInfo(); renderDashboardChart(); renderLowStockAlert();
+  renderUserSelect();
+  const u = App.users.find(x => x.id === userId);
+  showToast('کاربر فعال: ' + (u ? u.name : userId), 'info');
+}
+
+function addUser(name, role) {
+  name = (name || '').trim();
+  if (!name) return showToast('نام کاربر را وارد کنید', 'warning');
+  if (App.users.some(u => u.name === name)) return showToast('این نام تکراری است', 'warning');
+  const id = 'u_' + Date.now().toString(36);
+  App.users.push({ id, name, role: role || 'staff', createdAt: Date.now() });
+  saveUsers();
+  renderUserSelect();
+  showToast('کاربر «' + name + '» اضافه شد');
+}
+
+function deleteUser(userId) {
+  if (userId === 'default') return showToast('کاربر مدیر قابل حذف نیست', 'warning');
+  if (App.users.length <= 1) return showToast('حداقل یک کاربر لازم است', 'warning');
+  if (!confirm('حذف این کاربر و داده محلی‌اش؟')) return;
+  App.users = App.users.filter(u => u.id !== userId);
+  try { localStorage.removeItem(STORAGE_PREFIX + userId); } catch (e) {}
+  if (App.currentUserId === userId) switchUser(App.users[0].id);
+  else { saveUsers(); renderUserSelect(); }
+  showToast('کاربر حذف شد');
+}
+
+function openUsersModal() {
+  const html = `
+    <div class="modal active" id="usersModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>👤 کاربران (چندکاربره محلی)</h3>
+          <button class="close-btn" id="btnCloseUsers">×</button>
+        </div>
+        <div class="alert alert-info">هر کاربر داده جدا در همین دستگاه دارد. برای اشتراک بین دستگاه‌ها از خروجی JSON استفاده کنید.</div>
+        <div id="usersList"></div>
+        <div class="grid-2" style="margin-top:12px">
+          <div class="form-group" style="margin:0">
+            <label>نام کاربر جدید</label>
+            <input type="text" class="form-control" id="newUserName" placeholder="مثلاً انباردار ۱">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>نقش</label>
+            <select class="form-control" id="newUserRole">
+              <option value="staff">کارمند</option>
+              <option value="admin">مدیر</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block" id="btnAddUser" style="margin-top:10px">+ افزودن کاربر</button>
+      </div>
+    </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+  const list = document.getElementById('usersList');
+  list.innerHTML = App.users.map(u => `
+    <div class="tree-node">
+      <div><strong>${u.name}</strong> <span class="badge badge-info">${u.role}</span>
+      ${u.id === App.currentUserId ? ' <span class="badge badge-success">فعال</span>' : ''}</div>
+      <div>
+        ${u.id !== App.currentUserId ? `<button class="btn btn-sm btn-outline" data-switch-user="${u.id}">فعال</button>` : ''}
+        ${u.id !== 'default' ? `<button class="btn btn-sm btn-danger" data-del-user="${u.id}">حذف</button>` : ''}
+      </div>
+    </div>`).join('');
+  document.getElementById('btnCloseUsers').onclick = () => document.getElementById('usersModal')?.remove();
+  document.getElementById('btnAddUser').onclick = () => {
+    addUser(document.getElementById('newUserName').value, document.getElementById('newUserRole').value);
+    document.getElementById('usersModal')?.remove();
+    openUsersModal();
+  };
+  list.querySelectorAll('[data-switch-user]').forEach(b => b.onclick = () => {
+    switchUser(b.dataset.switchUser);
+    document.getElementById('usersModal')?.remove();
+  });
+  list.querySelectorAll('[data-del-user]').forEach(b => b.onclick = () => {
+    deleteUser(b.dataset.delUser);
+    document.getElementById('usersModal')?.remove();
+    openUsersModal();
+  });
+}
+
+// ==================== PERSISTENCE ====================
+function getExportPayload() {
+  return {
+    companies: App.companies,
+    products: App.products,
+    items: App.items,
+    scanned: App.scanned,
+    movements: App.movements,
+    storageHistory: App.storageHistory,
+    recentLookups: App.recentLookups,
+    priceRecords: App.priceRecords,
+    priceHistory: App.priceHistory,
+    autoSaveBrowser: App.autoSaveBrowser,
+    autoSaveDevice: App.autoSaveDevice,
+    settings: App.settings,
+    userId: App.currentUserId,
+    userName: (App.users.find(u => u.id === App.currentUserId) || {}).name || '',
+    version: APP_VERSION,
+    exportDate: new Date().toISOString(),
+    app: 'Professional Smart Warehouse'
+  };
+}
+
+function loadData() {
+  try {
+    // مهاجرت از نسخه ۲ (تک‌کاربره)
+    let raw = localStorage.getItem(storageKey());
+    if (!raw) {
+      const legacy = localStorage.getItem('warehouseProV2');
+      if (legacy) {
+        raw = legacy;
+        try {
+          localStorage.setItem(storageKey(), legacy);
+        } catch (e) {}
+      }
+    }
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    App.companies = d.companies || [];
+    App.products = d.products || [];
+    App.items = d.items || [];
+    App.scanned = d.scanned || [];
+    App.movements = d.movements || [];
+    App.storageHistory = d.storageHistory || [];
+    App.recentLookups = d.recentLookups || [];
+    App.priceRecords = d.priceRecords || [];
+    App.priceHistory = d.priceHistory || [];
+    App.autoSaveBrowser = d.autoSaveBrowser !== false;
+    App.autoSaveDevice = d.autoSaveDevice !== false;
+    if (d.settings) Object.assign(App.settings, d.settings);
+  } catch (e) {
+    console.error('Load error', e);
+  }
+}
+
+function save() {
+  const data = getExportPayload();
+  if (App.autoSaveBrowser) {
+    try {
+      localStorage.setItem(storageKey(), JSON.stringify(data));
+    } catch (e) {
+      showToast('خطا در ذخیره محلی: ' + e.message, 'error');
+    }
+  }
+  updateStorageInfo();
+  if (App.autoSaveDevice && App.fileHandle) {
+    saveToHandle().catch(e => console.error('Auto device save failed', e));
+  }
+  // اطلاع به Electron در صورت وجود
+  try {
+    if (window.electronAPI && window.electronAPI.onDataChanged) {
+      window.electronAPI.onDataChanged(data);
+    }
+  } catch (e) {}
+}
+
+function addMovement(type, item, qtyChange, note = '') {
+  const co = App.companies.find(c => c.id === item.companyId);
+  const pr = App.products.find(p => p.id === item.productId);
+  App.movements.unshift({
+    id: uid(),
+    type, // 'in' | 'out' | 'adjust'
+    itemId: item.id,
+    barcode: item.barcode || '',
+    productName: pr?.name || '-',
+    companyName: co?.name || '-',
+    qtyChange,
+    newQty: item.qty,
+    note,
+    time: nowFa(),
+    timestamp: Date.now()
+  });
+  if (App.movements.length > 300) App.movements = App.movements.slice(0, 300);
+}
+
+// ==================== NAVIGATION ====================
+function showTab(id) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === id);
+  });
+  document.querySelectorAll('.bottom-nav button[data-nav]').forEach(b => {
+    b.classList.toggle('active', b.dataset.nav === id);
+  });
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  if (id === 'inventory') renderItems();
+  if (id === 'dashboard') { updateStats(); renderDashboardChart(); renderLowStockAlert(); }
+  if (id === 'analysis') renderAnalysis();
+  if (id === 'scan') renderScannedList();
+  if (id === 'lookup') renderRecentLookups();
+  if (id === 'prices') {
+    renderPriceList();
+    const ppx = document.getElementById('priceProxyUrl');
+    if (ppx) ppx.value = getPriceProxy();
+  }
+  if (id === 'storage') updateStorageInfo();
+  if (id === 'movements') renderMovements();
+  if (id === 'structure') renderTree();
+  if (id === 'settings') loadSettingsUI();
+}
+
+// ==================== DARK MODE ====================
+function toggleDark() {
+  document.body.classList.toggle('dark');
+  try {
+    localStorage.setItem('darkMode', document.body.classList.contains('dark') ? '1' : '0');
+  } catch (e) {}
+  if (App.dashboardChart) renderDashboardChart();
+  if (App.analysisChart) renderAnalysis();
+}
+
+// ==================== COMPANIES & PRODUCTS ====================
+function addCompany() {
+  const name = document.getElementById('newCompany').value.trim();
+  if (!name) return showToast('نام شرکت را وارد کنید', 'error');
+  if (App.companies.some(c => c.name === name)) return showToast('این شرکت قبلاً ثبت شده', 'warning');
+  App.companies.push({ id: uid(), name, created: dateFa() });
+  document.getElementById('newCompany').value = '';
+  save();
+  refreshSelects();
+  renderTree();
+  updateStats();
+  showToast('شرکت اضافه شد');
+}
+
+function addProduct() {
+  const cid = document.getElementById('companySelect').value;
+  const name = document.getElementById('newProduct').value.trim();
+  const unit = document.getElementById('newProductUnit').value.trim() || 'عدد';
+  const minQty = parseInt(document.getElementById('newProductMin').value) || App.settings.lowThreshold;
+  if (!cid) return showToast('شرکت را انتخاب کنید', 'error');
+  if (!name) return showToast('نام محصول را وارد کنید', 'error');
+  App.products.push({
+    id: uid(),
+    companyId: cid,
+    name,
+    unit,
+    minQty,
+    created: dateFa()
+  });
+  document.getElementById('newProduct').value = '';
+  document.getElementById('newProductUnit').value = 'عدد';
+  document.getElementById('newProductMin').value = App.settings.lowThreshold;
+  save();
+  refreshSelects();
+  renderTree();
+  updateStats();
+  showToast('محصول اضافه شد');
+}
+
+function refreshSelects() {
+  const makeOpts = (list, empty) => empty + list.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  const cs = document.getElementById('companySelect');
+  const ec = document.getElementById('entryCompany');
+  const fc = document.getElementById('filterCompany');
+  if (cs) {
+    const v = cs.value;
+    cs.innerHTML = makeOpts(App.companies, '<option value="">انتخاب شرکت...</option>');
+    cs.value = v;
+  }
+  if (ec) {
+    const v = ec.value;
+    ec.innerHTML = makeOpts(App.companies, '<option value="">انتخاب...</option>');
+    ec.value = v;
+    updateEntryProducts();
+  }
+  if (fc) {
+    const v = fc.value;
+    fc.innerHTML = makeOpts(App.companies, '<option value="">همه شرکت‌ها</option>');
+    fc.value = v;
+  }
+}
+
+function updateEntryProducts() {
+  const cid = document.getElementById('entryCompany').value;
+  const sel = document.getElementById('entryProduct');
+  if (!cid) {
+    sel.innerHTML = '<option value="">انتخاب...</option>';
+    return;
+  }
+  const list = App.products.filter(p => p.companyId === cid);
+  sel.innerHTML = '<option value="">انتخاب...</option>' + list.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+}
+
+function renderTree(filter = '') {
+  const tv = document.getElementById('treeView');
+  const q = (filter || document.getElementById('treeSearch')?.value || '').toLowerCase();
+  let companies = App.companies;
+  if (q) {
+    companies = App.companies.filter(c => {
+      if (c.name.toLowerCase().includes(q)) return true;
+      return App.products.some(p => p.companyId === c.id && p.name.toLowerCase().includes(q));
+    });
+  }
+  if (!companies.length) {
+    tv.innerHTML = '<div class="empty-state"><div class="icon">🌳</div>هنوز ساختاری ثبت نشده</div>';
+    return;
+  }
+  let html = '';
+  companies.forEach(c => {
+    let prods = App.products.filter(p => p.companyId === c.id);
+    if (q) prods = prods.filter(p => p.name.toLowerCase().includes(q) || c.name.toLowerCase().includes(q));
+    html += `<div class="tree-node" style="background:var(--primary);color:#fff;font-weight:700">
+      <span>🏢 ${c.name} <small>(${prods.length} محصول)</small></span>
+      <button class="btn btn-sm" data-del-company="${c.id}" style="background:rgba(255,255,255,.2);color:#fff;padding:3px 9px">🗑️</button>
+    </div><div class="tree-children">`;
+    if (prods.length) {
+      prods.forEach(p => {
+        const its = App.items.filter(i => i.productId === p.id);
+        const totalQty = its.reduce((s, i) => s + i.qty, 0);
+        html += `<div class="tree-node">
+          <span>📦 ${p.name} <small style="color:var(--muted)">(${its.length} قلم • ${fmt(totalQty)} ${p.unit || 'عدد'})</small></span>
+          <button class="btn btn-sm" data-del-product="${p.id}" style="background:var(--danger);color:#fff;padding:3px 9px">🗑️</button>
+        </div>`;
+      });
+    } else {
+      html += '<div class="empty-state" style="padding:10px;font-size:.8rem">محصولی نیست</div>';
+    }
+    html += '</div>';
+  });
+  tv.innerHTML = html;
+}
+
+function deleteCompany(id) {
+  if (!confirm('شرکت و تمام محصولات و اقلام مرتبط حذف شوند؟')) return;
+  const prodIds = App.products.filter(p => p.companyId === id).map(p => p.id);
+  App.products = App.products.filter(p => p.companyId !== id);
+  App.items = App.items.filter(i => !prodIds.includes(i.productId));
+  App.companies = App.companies.filter(c => c.id !== id);
+  save();
+  refreshSelects();
+  renderTree();
+  updateStats();
+  renderItems();
+  showToast('شرکت حذف شد');
+}
+
+function deleteProduct(id) {
+  if (!confirm('محصول و تمام اقلام آن حذف شوند؟')) return;
+  App.products = App.products.filter(p => p.id !== id);
+  App.items = App.items.filter(i => i.productId !== id);
+  save();
+  refreshSelects();
+  renderTree();
+  updateStats();
+  renderItems();
+  showToast('محصول حذف شد');
+}
+
+// ==================== ITEMS ====================
+function addItem() {
+  const cid = document.getElementById('entryCompany').value;
+  const pid = document.getElementById('entryProduct').value;
+  if (!cid || !pid) return showToast('شرکت و محصول را انتخاب کنید', 'error');
+  const qty = parseInt(document.getElementById('entryQty').value) || 1;
+  if (qty < 1) return showToast('تعداد باید حداقل ۱ باشد', 'error');
+  const barcode = document.getElementById('entryBarcode').value.trim();
+
+  // اگر بارکد تکراری باشد، به موجودی همان قلم اضافه کن
+  if (barcode) {
+    const existing = App.items.find(i => i.barcode === barcode);
+    if (existing) {
+      existing.qty += qty;
+      existing.buy = parseFloat(document.getElementById('entryBuy').value) || existing.buy;
+      existing.sell = parseFloat(document.getElementById('entrySell').value) || existing.sell;
+      if (document.getElementById('entryLocation').value) existing.location = document.getElementById('entryLocation').value;
+      if (document.getElementById('entryNote').value) existing.note = document.getElementById('entryNote').value;
+      addMovement('in', existing, qty, 'افزایش از فرم ورود (بارکد تکراری)');
+      save();
+      clearEntry();
+      updateStats();
+      showToast(`✅ موجودی افزایش یافت → ${fmt(existing.qty)}`);
+      return;
+    }
+  }
+
+  const item = {
+    id: uid(),
+    companyId: cid,
+    productId: pid,
+    sub: document.getElementById('entrySub').value.trim(),
+    qty,
+    buy: parseFloat(document.getElementById('entryBuy').value) || 0,
+    sell: parseFloat(document.getElementById('entrySell').value) || 0,
+    barcode,
+    location: document.getElementById('entryLocation').value.trim(),
+    note: document.getElementById('entryNote').value.trim(),
+    date: dateFa(),
+    createdAt: Date.now()
+  };
+  App.items.push(item);
+  addMovement('in', item, qty, 'ورود جدید');
+  save();
+  clearEntry();
+  updateStats();
+  showToast('✅ کالا ثبت شد');
+}
+
+function clearEntry() {
+  document.getElementById('entryCompany').value = '';
+  document.getElementById('entryProduct').innerHTML = '<option value="">انتخاب...</option>';
+  document.getElementById('entrySub').value = '';
+  document.getElementById('entryQty').value = '1';
+  document.getElementById('entryBuy').value = '0';
+  document.getElementById('entrySell').value = '0';
+  document.getElementById('entryBarcode').value = '';
+  document.getElementById('entryLocation').value = '';
+  document.getElementById('entryNote').value = '';
+}
+
+function renderItems() {
+  const list = document.getElementById('itemsList');
+  const search = (document.getElementById('searchInput').value || '').toLowerCase();
+  const fc = document.getElementById('filterCompany').value;
+  const fs = document.getElementById('filterStatus').value;
+
+  let filtered = App.items.filter(i => {
+    const co = App.companies.find(c => c.id === i.companyId);
+    const pr = App.products.find(p => p.id === i.productId);
+    const txt = [(co?.name || ''), (pr?.name || ''), (i.sub || ''), (i.barcode || ''), (i.note || ''), (i.location || '')].join(' ').toLowerCase();
+    if (search && !txt.includes(search)) return false;
+    if (fc && i.companyId !== fc) return false;
+    const st = getStatus(i);
+    if (fs && st !== fs) return false;
+    return true;
+  });
+
+  document.getElementById('itemCount').textContent = fmt(filtered.length);
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">📦</div>موردی یافت نشد</div>';
+  } else {
+    let html = '';
+    filtered.forEach(i => {
+      const co = App.companies.find(c => c.id === i.companyId);
+      const pr = App.products.find(p => p.id === i.productId);
+      const profit = (i.sell - i.buy) * i.qty;
+      html += `<div class="item-row">
+        <div>
+          <strong>${pr?.name || '-'}</strong><br>
+          <small style="color:var(--muted)">${co?.name || '-'} ${i.sub ? '• ' + i.sub : ''}</small>
+          ${i.barcode ? `<br><small style="font-family:monospace;color:var(--primary)">${i.barcode}</small>` : ''}
+        </div>
+        <div>${getStatusBadge(i)}<br><small>${fmt(i.qty)} ${pr?.unit || 'عدد'}</small></div>
+        <div><small>خرید</small><br>${fmt(i.buy)}</div>
+        <div><small>فروش</small><br>${fmt(i.sell)}</div>
+        <div><small>سود</small><br><strong style="color:var(--success)">${fmt(profit)}</strong></div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap">
+          <button class="btn btn-info btn-sm" data-adjust-item="${i.id}" title="تنظیم موجودی">🔄</button>
+          <button class="btn btn-primary btn-sm" data-edit-item="${i.id}">✏️</button>
+          <button class="btn btn-danger btn-sm" data-del-item="${i.id}">🗑️</button>
+        </div>
+      </div>`;
+    });
+    list.innerHTML = html;
+  }
+
+  const totQty = filtered.reduce((s, i) => s + i.qty, 0);
+  const totBuy = filtered.reduce((s, i) => s + i.buy * i.qty, 0);
+  const totSell = filtered.reduce((s, i) => s + i.sell * i.qty, 0);
+  document.getElementById('sumQty').textContent = fmt(totQty);
+  document.getElementById('sumBuy').textContent = fmt(totBuy) + ' ' + App.settings.currency;
+  document.getElementById('sumSell').textContent = fmt(totSell) + ' ' + App.settings.currency;
+  document.getElementById('sumProfit').textContent = fmt(totSell - totBuy) + ' ' + App.settings.currency;
+}
+
+function deleteItem(id) {
+  if (!confirm('این کالا حذف شود؟')) return;
+  const item = App.items.find(i => i.id === id);
+  if (item) addMovement('out', item, -item.qty, 'حذف کامل');
+  App.items = App.items.filter(i => i.id !== id);
+  save();
+  renderItems();
+  updateStats();
+  showToast('کالا حذف شد');
+}
+
+function openAdjustModal(id) {
+  const item = App.items.find(i => i.id === id);
+  if (!item) return;
+  App.currentAdjustId = id;
+  const pr = App.products.find(p => p.id === item.productId);
+  document.getElementById('adjustForm').innerHTML = `
+    <p style="margin-bottom:12px;font-size:.9rem"><strong>${pr?.name || '-'}</strong> — موجودی فعلی: <strong style="color:var(--primary)">${fmt(item.qty)}</strong></p>
+    <div class="form-group"><label>نوع عملیات</label>
+      <select id="adjustType" class="form-control">
+        <option value="set">تنظیم به مقدار مشخص</option>
+        <option value="add">افزایش</option>
+        <option value="sub">کاهش</option>
+      </select>
+    </div>
+    <div class="form-group"><label>مقدار</label><input type="number" id="adjustQty" class="form-control" value="1" min="0"></div>
+    <div class="form-group"><label>دلیل / یادداشت</label><input type="text" id="adjustNote" class="form-control" placeholder="اختیاری"></div>
+  `;
+  document.getElementById('adjustModal').classList.add('active');
+}
+
+function saveAdjust() {
+  const item = App.items.find(i => i.id === App.currentAdjustId);
+  if (!item) return;
+  const type = document.getElementById('adjustType').value;
+  const val = parseInt(document.getElementById('adjustQty').value) || 0;
+  const note = document.getElementById('adjustNote').value.trim() || 'تنظیم دستی';
+  let change = 0;
+  if (type === 'set') {
+    change = val - item.qty;
+    item.qty = Math.max(0, val);
+  } else if (type === 'add') {
+    change = val;
+    item.qty += val;
+  } else {
+    change = -Math.min(val, item.qty);
+    item.qty = Math.max(0, item.qty - val);
+  }
+  addMovement(change >= 0 ? 'in' : 'out', item, change, note);
+  save();
+  closeAdjustModal();
+  renderItems();
+  updateStats();
+  showToast('موجودی به‌روز شد');
+}
+
+function closeAdjustModal() {
+  document.getElementById('adjustModal').classList.remove('active');
+  App.currentAdjustId = null;
+}
+
+function editItem(id) {
+  const item = App.items.find(i => i.id === id);
+  if (!item) return showToast('کالا یافت نشد', 'error');
+  App.currentEditId = id;
+  let companyOpts = App.companies.map(c => `<option value="${c.id}" ${c.id === item.companyId ? 'selected' : ''}>${c.name}</option>`).join('');
+  document.getElementById('editForm').innerHTML = `
+    <div class="edit-grid">
+      <div class="form-group"><label>شرکت</label><select id="editCompany" class="form-control">${companyOpts}</select></div>
+      <div class="form-group"><label>محصول</label><select id="editProduct" class="form-control"></select></div>
+      <div class="form-group"><label>زیرشاخه</label><input type="text" id="editSub" class="form-control" value="${item.sub || ''}"></div>
+      <div class="form-group"><label>تعداد</label><input type="number" id="editQty" class="form-control" value="${item.qty}" min="0"></div>
+      <div class="form-group"><label>قیمت خرید</label><input type="number" id="editBuy" class="form-control" value="${item.buy}" min="0"></div>
+      <div class="form-group"><label>قیمت فروش</label><input type="number" id="editSell" class="form-control" value="${item.sell}" min="0"></div>
+      <div class="form-group"><label>بارکد</label>
+        <div style="display:flex;gap:5px">
+          <input type="text" id="editBarcode" class="form-control" value="${item.barcode || ''}">
+          <button class="btn btn-success btn-sm" id="btnScanEdit" type="button">📷</button>
+        </div>
+      </div>
+      <div class="form-group"><label>محل نگهداری</label><input type="text" id="editLocation" class="form-control" value="${item.location || ''}"></div>
+      <div class="form-group" style="grid-column:1/-1"><label>یادداشت</label><textarea id="editNote" class="form-control">${item.note || ''}</textarea></div>
+    </div>
+    <div style="padding:10px;background:var(--bg);border-radius:10px;margin-top:10px;font-size:.78rem;color:var(--muted)">📅 تاریخ ثبت: ${item.date || '-'}</div>
+  `;
+  updateEditProducts(item.productId);
+  document.getElementById('editCompany').addEventListener('change', function () {
+    updateEditProducts();
+  });
+  document.getElementById('editModal').classList.add('active');
+}
+
+function updateEditProducts(selectedId) {
+  const cid = document.getElementById('editCompany').value;
+  const sel = document.getElementById('editProduct');
+  const list = App.products.filter(p => p.companyId === cid);
+  sel.innerHTML = list.map(p => `<option value="${p.id}" ${p.id === selectedId ? 'selected' : ''}>${p.name}</option>`).join('');
+}
+
+function closeEditModal() {
+  document.getElementById('editModal').classList.remove('active');
+  App.currentEditId = null;
+}
+
+function saveEditedItem() {
+  const item = App.items.find(i => i.id === App.currentEditId);
+  if (!item) return;
+  const oldQty = item.qty;
+  item.companyId = document.getElementById('editCompany').value;
+  item.productId = document.getElementById('editProduct').value;
+  item.sub = document.getElementById('editSub').value.trim();
+  item.qty = parseInt(document.getElementById('editQty').value) || 0;
+  item.buy = parseFloat(document.getElementById('editBuy').value) || 0;
+  item.sell = parseFloat(document.getElementById('editSell').value) || 0;
+  item.barcode = document.getElementById('editBarcode').value.trim();
+  item.location = document.getElementById('editLocation').value.trim();
+  item.note = document.getElementById('editNote').value.trim();
+  if (item.qty !== oldQty) {
+    addMovement(item.qty > oldQty ? 'in' : 'out', item, item.qty - oldQty, 'ویرایش دستی');
+  }
+  save();
+  closeEditModal();
+  renderItems();
+  updateStats();
+  showToast('✅ تغییرات ذخیره شد');
+}
+
+// ==================== STATS & CHARTS ====================
+function updateStats() {
+  document.getElementById('statCompanies').textContent = fmt(App.companies.length);
+  document.getElementById('statProducts').textContent = fmt(App.products.length);
+  document.getElementById('statItems').textContent = fmt(App.items.length);
+  const tb = App.items.reduce((s, i) => s + i.buy * i.qty, 0);
+  const ts = App.items.reduce((s, i) => s + i.sell * i.qty, 0);
+  document.getElementById('statBuyValue').textContent = fmt(tb) + ' ' + App.settings.currency;
+  document.getElementById('statSellValue').textContent = fmt(ts) + ' ' + App.settings.currency;
+  document.getElementById('statProfit').textContent = fmt(ts - tb) + ' ' + App.settings.currency;
+
+  const low = App.items.filter(i => getStatus(i) === 'low').length;
+  const out = App.items.filter(i => getStatus(i) === 'out').length;
+  document.getElementById('statLow').textContent = fmt(low);
+  document.getElementById('statOut').textContent = fmt(out);
+  const lowCard = document.getElementById('statLowCard');
+  if (low > 0) lowCard.classList.add('alert');
+  else lowCard.classList.remove('alert');
+}
+
+function renderLowStockAlert() {
+  const box = document.getElementById('lowStockAlert');
+  const list = document.getElementById('lowStockList');
+  const lows = App.items.filter(i => getStatus(i) === 'low' || getStatus(i) === 'out')
+    .sort((a, b) => a.qty - b.qty);
+  if (!lows.length) {
+    box.style.display = 'none';
+    return;
+  }
+  box.style.display = 'block';
+  list.innerHTML = lows.slice(0, 12).map(i => {
+    const pr = App.products.find(p => p.id === i.productId);
+    const co = App.companies.find(c => c.id === i.companyId);
+    return `<div class="low-stock-item">
+      <div><strong>${pr?.name || '-'}</strong> <small style="color:var(--muted)">${co?.name || ''}</small></div>
+      <div>${getStatusBadge(i)} ${fmt(i.qty)}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderDashboardChart() {
+  const canvas = document.getElementById('dashboardChart');
+  if (!canvas) return;
+  if (App.dashboardChart) App.dashboardChart.destroy();
+  const byCompany = {};
+  App.items.forEach(i => {
+    const co = App.companies.find(x => x.id === i.companyId);
+    const name = co?.name || 'نامشخص';
+    if (!byCompany[name]) byCompany[name] = { buy: 0, sell: 0 };
+    byCompany[name].buy += i.buy * i.qty;
+    byCompany[name].sell += i.sell * i.qty;
+  });
+  const labels = Object.keys(byCompany);
+  if (!labels.length) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    return;
+  }
+  const isDark = document.body.classList.contains('dark');
+  const textColor = isDark ? '#f1f5f9' : '#1a202c';
+  const gridColor = isDark ? 'rgba(148,163,184,.2)' : 'rgba(0,0,0,.08)';
+  App.dashboardChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'ارزش خرید', data: labels.map(l => byCompany[l].buy), backgroundColor: 'rgba(59,130,246,.75)', borderRadius: 6 },
+        { label: 'ارزش فروش', data: labels.map(l => byCompany[l].sell), backgroundColor: 'rgba(16,185,129,.75)', borderRadius: 6 }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: textColor, font: { family: 'Vazirmatn' } } } },
+      scales: {
+        x: { ticks: { color: textColor, font: { family: 'Vazirmatn' } }, grid: { color: gridColor } },
+        y: { ticks: { color: textColor, font: { family: 'Vazirmatn' } }, grid: { color: gridColor } }
+      }
+    }
+  });
+}
+
+function renderAnalysis() {
+  const c = document.getElementById('analysisContent');
+  const chartCard = document.getElementById('analysisChartCard');
+  if (!App.items.length) {
+    c.innerHTML = '<div class="empty-state"><div class="icon">📊</div>برای مشاهده تحلیل، اقلامی ثبت کنید</div>';
+    chartCard.style.display = 'none';
+    return;
+  }
+  const byCompany = {};
+  App.items.forEach(i => {
+    const co = App.companies.find(x => x.id === i.companyId);
+    const name = co?.name || 'نامشخص';
+    if (!byCompany[name]) byCompany[name] = { buy: 0, sell: 0, qty: 0, items: 0 };
+    byCompany[name].buy += i.buy * i.qty;
+    byCompany[name].sell += i.sell * i.qty;
+    byCompany[name].qty += i.qty;
+    byCompany[name].items++;
+  });
+  const rows = Object.entries(byCompany).map(([n, v]) => ({
+    name: n, ...v, profit: v.sell - v.buy,
+    margin: v.sell > 0 ? ((v.sell - v.buy) / v.sell * 100) : 0
+  })).sort((a, b) => b.profit - a.profit);
+
+  const totalBuy = rows.reduce((s, r) => s + r.buy, 0);
+  const totalSell = rows.reduce((s, r) => s + r.sell, 0);
+  const totalProfit = rows.reduce((s, r) => s + r.profit, 0);
+  const avgMargin = totalSell > 0 ? ((totalProfit / totalSell) * 100).toFixed(1) : 0;
+
+  let tableRows = rows.map(r => `
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px">${r.name}</td>
+      <td style="padding:8px;text-align:center">${fmt(r.qty)}</td>
+      <td style="padding:8px;text-align:center">${fmt(r.buy)}</td>
+      <td style="padding:8px;text-align:center">${fmt(r.sell)}</td>
+      <td style="padding:8px;text-align:center;color:var(--success);font-weight:700">${fmt(r.profit)}</td>
+      <td style="padding:8px;text-align:center">${r.margin.toFixed(1)}٪</td>
+    </tr>`).join('');
+
+  c.innerHTML = `
+    <div class="grid-3" style="margin-bottom:14px">
+      <div class="stat-card"><div class="label">💰 کل خرید</div><div class="value">${fmt(totalBuy)} ${App.settings.currency}</div></div>
+      <div class="stat-card"><div class="label">💎 کل فروش</div><div class="value">${fmt(totalSell)} ${App.settings.currency}</div></div>
+      <div class="stat-card" style="border-right-color:var(--success)"><div class="label">📈 کل سود (حاشیه ${avgMargin}٪)</div><div class="value" style="color:var(--success)">${fmt(totalProfit)} ${App.settings.currency}</div></div>
+    </div>
+    <h4>🏆 رتبه‌بندی سود شرکت‌ها</h4>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:.82rem">
+        <thead><tr style="background:var(--bg)">
+          <th style="padding:8px;text-align:right">شرکت</th>
+          <th style="padding:8px">تعداد</th>
+          <th style="padding:8px">خرید</th>
+          <th style="padding:8px">فروش</th>
+          <th style="padding:8px">سود</th>
+          <th style="padding:8px">حاشیه</th>
+        </tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </div>`;
+
+  chartCard.style.display = 'block';
+  if (App.analysisChart) App.analysisChart.destroy();
+  const isDark = document.body.classList.contains('dark');
+  const textColor = isDark ? '#f1f5f9' : '#1a202c';
+  App.analysisChart = new Chart(document.getElementById('analysisChart'), {
+    type: 'doughnut',
+    data: {
+      labels: rows.map(r => r.name),
+      datasets: [{
+        data: rows.map(r => Math.max(0, r.profit)),
+        backgroundColor: ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899','#84cc16']
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { family: 'Vazirmatn', size: 11 } } } }
+    }
+  });
+}
+
+// ==================== SCAN ====================
+function openScanModal() {
+  document.getElementById('scanModal').classList.add('active');
+  renderScannedList();
+  setTimeout(startScanner, 280);
+}
+
+function closeScanModal() {
+  document.getElementById('scanModal').classList.remove('active');
+  stopScanner();
+}
+
+async function startScanner() {
+  if (typeof Html5Qrcode === 'undefined') return showToast('کتابخانه اسکن بارگذاری نشده', 'error');
+  try {
+    if (!App.html5QrCode) App.html5QrCode = new Html5Qrcode('qr-reader');
+    const cameras = await Html5Qrcode.getCameras();
+    if (!cameras.length) return showToast('دوربینی یافت نشد', 'error');
+    const sel = document.getElementById('cameraSelect');
+    sel.innerHTML = cameras.map((c, i) => `<option value="${c.id}">${c.label || 'دوربین ' + (i + 1)}</option>`).join('');
+    const back = cameras.find(c => /back|rear|environment/i.test(c.label));
+    App.currentCameraId = back ? back.id : cameras[0].id;
+    sel.value = App.currentCameraId;
+    await App.html5QrCode.start(
+      App.currentCameraId,
+      { fps: 12, qrbox: { width: 260, height: 160 }, aspectRatio: 1.777 },
+      onScanSuccess
+    );
+    App.isScanning = true;
+    document.getElementById('scanningStatus').style.display = 'inline-flex';
+  } catch (e) {
+    console.error(e);
+    showToast('خطا در دوربین: ' + e.message, 'error');
+  }
+}
+
+async function switchCamera() {
+  App.currentCameraId = document.getElementById('cameraSelect').value;
+  if (App.html5QrCode && App.isScanning) {
+    try {
+      await App.html5QrCode.stop();
+      await App.html5QrCode.start(App.currentCameraId, { fps: 12, qrbox: { width: 260, height: 160 } }, onScanSuccess);
+    } catch (e) { console.error(e); }
+  }
+}
+
+function stopScanner() {
+  if (App.html5QrCode && App.isScanning) {
+    App.html5QrCode.stop().then(() => {
+      App.isScanning = false;
+      document.getElementById('scanningStatus').style.display = 'none';
+    }).catch(() => {});
+  }
+}
+
+function onScanSuccess(decodedText) {
+  const now = Date.now();
+  if (decodedText === App.lastScannedCode && now - App.lastScanTime < 1400) return;
+  App.lastScannedCode = decodedText;
+  App.lastScanTime = now;
+  addScannedBarcode(decodedText);
+  const ind = document.getElementById('scanIndicator');
+  ind.classList.add('flash');
+  setTimeout(() => ind.classList.remove('flash'), 450);
+  playBeep();
+}
+
+function addScannedBarcode(code) {
+  code = (code || '').trim();
+  if (!code) return;
+  const existing = App.scanned.find(s => s.barcode === code);
+  if (existing) {
+    existing.count++;
+    existing.lastScan = timeFa();
+  } else {
+    const match = App.items.find(i => i.barcode === code);
+    App.scanned.push({
+      id: uid(),
+      barcode: code,
+      count: 1,
+      matchedItem: match ? match.id : null,
+      productName: match ? (App.products.find(p => p.id === match.productId)?.name || '') : '',
+      companyName: match ? (App.companies.find(c => c.id === match.companyId)?.name || '') : '',
+      firstScan: timeFa(),
+      lastScan: timeFa()
+    });
+  }
+  save();
+  renderScannedList();
+  updateScanCounter();
+}
+
+function addManualBarcode() {
+  const v = document.getElementById('manualBarcode').value.trim();
+  if (!v) return;
+  addScannedBarcode(v);
+  document.getElementById('manualBarcode').value = '';
+}
+
+function renderScannedList() {
+  const total = App.scanned.reduce((s, i) => s + i.count, 0);
+  document.getElementById('scannedTotal').textContent = fmt(total);
+  document.getElementById('scannedUnique').textContent = fmt(App.scanned.length);
+  document.getElementById('scannedItems').textContent = fmt(App.scanned.filter(i => i.matchedItem).length);
+  document.getElementById('modalScanCount').textContent = fmt(App.scanned.length);
+
+  const c1 = document.getElementById('scannedListContainer');
+  const c2 = document.getElementById('modalScannedList');
+  if (!App.scanned.length) {
+    const h = '<div class="empty-state" style="padding:14px"><div class="icon">📷</div>هنوز کالایی اسکن نشده</div>';
+    if (c1) c1.innerHTML = h;
+    if (c2) c2.innerHTML = h;
+    return;
+  }
+  let html = '';
+  App.scanned.slice().reverse().forEach(s => {
+    const matchBadge = s.matchedItem
+      ? '<span class="badge badge-success">✓ شناسایی</span>'
+      : '<span class="badge badge-warning">ناشناس</span>';
+    html += `<div class="scanned-item">
+      <div class="info">
+        <div class="barcode">📊 ${s.barcode}</div>
+        <div class="meta" style="color:var(--muted);font-size:.72rem;margin-top:2px">
+          ${s.productName ? '📦 ' + s.productName + ' • ' : ''}
+          ${s.companyName ? '🏢 ' + s.companyName + ' • ' : ''}
+          تعداد: <strong style="color:var(--primary)">${fmt(s.count)}</strong>
+        </div>
+      </div>
+      <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
+        ${matchBadge}
+        <button class="btn btn-outline btn-sm" data-inc-scan="${s.id}">+</button>
+        <button class="btn btn-outline btn-sm" data-dec-scan="${s.id}">−</button>
+        <button class="btn btn-danger btn-sm" data-del-scan="${s.id}">🗑️</button>
+      </div>
+    </div>`;
+  });
+  if (c1) c1.innerHTML = '<div class="scanned-list">' + html + '</div>';
+  if (c2) c2.innerHTML = html;
+}
+
+function incScanned(id) {
+  const s = App.scanned.find(x => x.id === id);
+  if (s) { s.count++; s.lastScan = timeFa(); save(); renderScannedList(); updateScanCounter(); }
+}
+function decScanned(id) {
+  const s = App.scanned.find(x => x.id === id);
+  if (s) {
+    s.count--;
+    if (s.count <= 0) App.scanned = App.scanned.filter(x => x.id !== id);
+    else s.lastScan = timeFa();
+    save(); renderScannedList(); updateScanCounter();
+  }
+}
+function delScanned(id) {
+  App.scanned = App.scanned.filter(x => x.id !== id);
+  save(); renderScannedList(); updateScanCounter();
+}
+function clearScanned() {
+  if (!App.scanned.length) return;
+  if (!confirm('همه اسکن‌ها پاک شوند؟')) return;
+  App.scanned = [];
+  save(); renderScannedList(); updateScanCounter();
+  showToast('پاک شد');
+}
+
+function updateScanCounter() {
+  const n = App.scanned.reduce((s, i) => s + i.count, 0);
+  const tab = document.getElementById('scanCounterTab');
+  const bottom = document.getElementById('scanCounterBottom');
+  if (n > 0) {
+    if (tab) { tab.style.display = 'inline-block'; tab.textContent = n; }
+    if (bottom) { bottom.style.display = 'inline-block'; bottom.textContent = n; }
+  } else {
+    if (tab) tab.style.display = 'none';
+    if (bottom) bottom.style.display = 'none';
+  }
+}
+
+function commitScannedItems() {
+  if (!App.scanned.length) return showToast('لیست اسکن خالی است', 'warning');
+  let added = 0, created = 0;
+  App.scanned.forEach(s => {
+    if (s.matchedItem) {
+      const item = App.items.find(i => i.id === s.matchedItem);
+      if (item) {
+        item.qty += s.count;
+        addMovement('in', item, s.count, 'ثبت از اسکن');
+        added += s.count;
+        return;
+      }
+    }
+    // ایجاد قلم جدید در اولین شرکت/محصول موجود
+    const dc = App.companies[0];
+    const dp = dc ? App.products.find(p => p.companyId === dc.id) : null;
+    if (dc && dp) {
+      const newItem = {
+        id: uid(),
+        companyId: dc.id,
+        productId: dp.id,
+        sub: 'اسکن‌شده',
+        qty: s.count,
+        buy: 0,
+        sell: 0,
+        barcode: s.barcode,
+        location: '',
+        note: 'ثبت خودکار از اسکن',
+        date: dateFa(),
+        createdAt: Date.now()
+      };
+      App.items.push(newItem);
+      addMovement('in', newItem, s.count, 'ثبت جدید از اسکن');
+      created += s.count;
+    } else {
+      showToast('ابتدا حداقل یک شرکت و محصول بسازید', 'warning');
+    }
+  });
+  App.scanned = [];
+  save();
+  renderScannedList();
+  updateScanCounter();
+  updateStats();
+  showToast(`✅ ثبت شد: ${added} افزوده، ${created} جدید`);
+}
+
+function exportScannedCSV() {
+  if (!App.scanned.length) return showToast('لیست خالی است', 'warning');
+  let csv = '\uFEFFبارکد,تعداد,کالا,شرکت,اولین اسکن,آخرین اسکن\n';
+  App.scanned.forEach(s => {
+    csv += `"${s.barcode}",${s.count},"${s.productName}","${s.companyName}","${s.firstScan}","${s.lastScan}"\n`;
+  });
+  downloadBlob(csv, 'scanned-items.csv', 'text/csv;charset=utf-8');
+}
+
+function exportCSV() {
+  if (!App.items.length) return showToast('موردی نیست', 'warning');
+  let csv = '\uFEFFشرکت,محصول,زیرشاخه,تعداد,خرید,فروش,بارکد,محل,یادداشت,تاریخ\n';
+  App.items.forEach(i => {
+    const co = App.companies.find(c => c.id === i.companyId);
+    const pr = App.products.find(p => p.id === i.productId);
+    csv += `"${co?.name || ''}","${pr?.name || ''}","${i.sub || ''}",${i.qty},${i.buy},${i.sell},"${i.barcode || ''}","${i.location || ''}","${i.note || ''}","${i.date || ''}"\n`;
+  });
+  downloadBlob(csv, 'inventory.csv', 'text/csv;charset=utf-8');
+  showToast('📄 فایل CSV دانلود شد');
+}
+
+function exportExcel() {
+  if (!App.items.length) return showToast('موردی نیست', 'warning');
+  let tsv = '\uFEFFشرکت\tمحصول\tزیرشاخه\tتعداد\tخرید\tفروش\tبارکد\tمحل\tیادداشت\tتاریخ\n';
+  App.items.forEach(i => {
+    const co = App.companies.find(c => c.id === i.companyId);
+    const pr = App.products.find(p => p.id === i.productId);
+    tsv += `${co?.name || ''}\t${pr?.name || ''}\t${i.sub || ''}\t${i.qty}\t${i.buy}\t${i.sell}\t${i.barcode || ''}\t${i.location || ''}\t${i.note || ''}\t${i.date || ''}\n`;
+  });
+  downloadBlob(tsv, 'inventory.xls', 'application/vnd.ms-excel;charset=utf-8');
+  showToast('📊 فایل اکسل دانلود شد');
+}
+
+function downloadBlob(content, filename, type) {
+  const blob = new Blob([content], { type });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 120);
+}
+
+// ==================== FIELD SCAN ====================
+function scanForEntry() {
+  App.entryScanCallback = (code) => {
+    document.getElementById('entryBarcode').value = code;
+    showToast('بارکد اسکن شد: ' + code);
+  };
+  openScanForField();
+}
+
+function scanForEdit() {
+  App.entryScanCallback = (code) => {
+    document.getElementById('editBarcode').value = code;
+    showToast('بارکد اسکن شد: ' + code);
+  };
+  openScanForField();
+}
+
+async function openScanForField() {
+  document.getElementById('fieldScanModal').classList.add('active');
+  setTimeout(async () => {
+    try {
+      App.fieldScanner = new Html5Qrcode('qr-reader-edit');
+      const cameras = await Html5Qrcode.getCameras();
+      if (!cameras.length) {
+        showToast('دوربینی نیست', 'error');
+        closeFieldScanModal();
+        return;
+      }
+      const back = cameras.find(c => /back|rear|environment/i.test(c.label)) || cameras[0];
+      await App.fieldScanner.start(back.id, { fps: 12, qrbox: { width: 250, height: 150 } }, (text) => {
+        if (App.entryScanCallback) App.entryScanCallback(text);
+        playBeep();
+        closeFieldScanModal();
+      });
+    } catch (e) {
+      showToast('خطا: ' + e.message, 'error');
+      closeFieldScanModal();
+    }
+  }, 280);
+}
+
+function closeFieldScanModal() {
+  document.getElementById('fieldScanModal').classList.remove('active');
+  if (App.fieldScanner) {
+    App.fieldScanner.stop().catch(() => {});
+    App.fieldScanner = null;
+  }
+  App.entryScanCallback = null;
+}
+
+// ==================== LOOKUP ====================
+async function openLookupScanner() {
+  document.getElementById('lookupScannerContainer').style.display = 'block';
+  if (typeof Html5Qrcode === 'undefined') return showToast('کتابخانه اسکن بارگذاری نشده', 'error');
+  try {
+    if (!App.lookupScanner) App.lookupScanner = new Html5Qrcode('qr-reader-lookup');
+    const cameras = await Html5Qrcode.getCameras();
+    if (!cameras.length) return showToast('دوربینی یافت نشد', 'error');
+    const back = cameras.find(c => /back|rear|environment/i.test(c.label)) || cameras[0];
+    await App.lookupScanner.start(back.id, { fps: 12, qrbox: { width: 250, height: 150 } }, onLookupScan);
+  } catch (e) {
+    showToast('خطا: ' + e.message, 'error');
+  }
+}
+
+function stopLookupScanner() {
+  if (App.lookupScanner) {
+    App.lookupScanner.stop().then(() => {
+      document.getElementById('lookupScannerContainer').style.display = 'none';
+    }).catch(() => {});
+    App.lookupScanner = null;
+  }
+}
+
+function onLookupScan(decodedText) {
+  const now = Date.now();
+  if (decodedText === App.lastScannedCode && now - App.lastScanTime < 1400) return;
+  App.lastScannedCode = decodedText;
+  App.lastScanTime = now;
+  document.getElementById('lookupManualInput').value = decodedText;
+  lookupBarcode();
+  const ind = document.getElementById('lookupScanIndicator');
+  ind.classList.add('flash');
+  setTimeout(() => ind.classList.remove('flash'), 450);
+  playBeep();
+}
+
+function lookupBarcode() {
+  const code = document.getElementById('lookupManualInput').value.trim();
+  if (!code) return showToast('بارکد را وارد کنید', 'warning');
+  const item = App.items.find(i => i.barcode === code);
+  const resultDiv = document.getElementById('lookupResult');
+
+  if (item) {
+    const co = App.companies.find(c => c.id === item.companyId);
+    const pr = App.products.find(p => p.id === item.productId);
+    const st = getStatus(item);
+    const statusClass = st;
+    const statusText = st === 'out' ? '❌ ناموجود' : st === 'low' ? '⚠️ کم‌موجود' : '✅ موجود';
+    const profit = (item.sell - item.buy) * item.qty;
+    const margin = item.sell > 0 ? ((item.sell - item.buy) / item.sell * 100).toFixed(1) : 0;
+
+    resultDiv.innerHTML = `
+      <div class="lookup-card found">
+        <div class="lookup-header">
+          <h3><span style="font-size:1.2rem">✅</span> کالا یافت شد</h3>
+          <span class="status-big ${statusClass}">${statusText}</span>
+        </div>
+        <div class="lookup-barcode">📊 ${item.barcode}</div>
+        <div class="lookup-grid">
+          <div class="lookup-field"><div class="lbl">🏢 شرکت</div><div class="val">${co?.name || '-'}</div></div>
+          <div class="lookup-field"><div class="lbl">📦 محصول</div><div class="val">${pr?.name || '-'}</div></div>
+          <div class="lookup-field"><div class="lbl">🔖 زیرشاخه</div><div class="val">${item.sub || '-'}</div></div>
+          <div class="lookup-field"><div class="lbl">🔢 تعداد</div><div class="val" style="color:var(--primary);font-size:1.1rem">${fmt(item.qty)} ${pr?.unit || 'عدد'}</div></div>
+          <div class="lookup-field"><div class="lbl">💰 قیمت خرید</div><div class="val">${fmt(item.buy)} ${App.settings.currency}</div></div>
+          <div class="lookup-field"><div class="lbl">💎 قیمت فروش</div><div class="val">${fmt(item.sell)} ${App.settings.currency}</div></div>
+          <div class="lookup-field"><div class="lbl">💵 ارزش کل خرید</div><div class="val">${fmt(item.buy * item.qty)} ${App.settings.currency}</div></div>
+          <div class="lookup-field"><div class="lbl">💎 ارزش کل فروش</div><div class="val">${fmt(item.sell * item.qty)} ${App.settings.currency}</div></div>
+          <div class="lookup-field"><div class="lbl">📈 سود بالقوه</div><div class="val" style="color:var(--success)">${fmt(profit)} ${App.settings.currency}</div></div>
+          <div class="lookup-field"><div class="lbl">📊 حاشیه سود</div><div class="val">${margin}٪</div></div>
+          <div class="lookup-field"><div class="lbl">📍 محل</div><div class="val">${item.location || '-'}</div></div>
+          <div class="lookup-field"><div class="lbl">📅 تاریخ</div><div class="val">${item.date || '-'}</div></div>
+        </div>
+        ${item.note ? `<div class="lookup-field" style="margin-top:8px"><div class="lbl">📝 یادداشت</div><div class="val">${item.note}</div></div>` : ''}
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-info btn-sm" data-adjust-item="${item.id}">🔄 تنظیم موجودی</button>
+          <button class="btn btn-primary btn-sm" data-edit-item="${item.id}">✏️ ویرایش</button>
+        </div>
+      </div>`;
+
+    App.recentLookups = App.recentLookups.filter(r => r.barcode !== code);
+    App.recentLookups.unshift({
+      barcode: code, found: true, time: nowFa(),
+      productName: pr?.name, companyName: co?.name, qty: item.qty
+    });
+    if (App.recentLookups.length > 15) App.recentLookups = App.recentLookups.slice(0, 15);
+    save();
+    renderRecentLookups();
+  } else {
+    resultDiv.innerHTML = `
+      <div class="lookup-card notfound">
+        <div class="notfound-big" style="text-align:center;padding:22px 12px">
+          <div class="icon" style="font-size:3rem;margin-bottom:8px">❌</div>
+          <div class="title" style="font-size:1.1rem;font-weight:700;color:var(--danger);margin-bottom:4px">کالا یافت نشد</div>
+          <div class="desc" style="color:var(--muted);font-size:.85rem">بارکد <strong style="font-family:monospace">${code}</strong> در انبار ثبت نشده</div>
+          <div style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+            <button class="btn btn-primary" id="btnGoEntryFromLookup">📝 ثبت کالای جدید</button>
+            <button class="btn btn-outline" id="btnClearLookupFromResult">🔄 استعلام جدید</button>
+          </div>
+        </div>
+      </div>`;
+    document.getElementById('btnGoEntryFromLookup').onclick = () => {
+      document.getElementById('entryBarcode').value = code;
+      showTab('entry');
+    };
+    document.getElementById('btnClearLookupFromResult').onclick = clearLookup;
+    App.recentLookups = App.recentLookups.filter(r => r.barcode !== code);
+    App.recentLookups.unshift({ barcode: code, found: false, time: nowFa() });
+    if (App.recentLookups.length > 15) App.recentLookups = App.recentLookups.slice(0, 15);
+    save();
+    renderRecentLookups();
+  }
+}
+
+function clearLookup() {
+  document.getElementById('lookupManualInput').value = '';
+  document.getElementById('lookupResult').innerHTML = '';
+  stopLookupScanner();
+}
+
+function renderRecentLookups() {
+  const c = document.getElementById('recentLookups');
+  if (!App.recentLookups.length) { c.innerHTML = ''; return; }
+  let html = '<div class="card"><h3>🕐 استعلام‌های اخیر</h3>';
+  App.recentLookups.forEach(r => {
+    html += `<div class="recent-item" data-lookup-barcode="${r.barcode}">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <strong style="font-family:monospace">${r.barcode}</strong>
+          ${r.found
+            ? `<small style="color:var(--muted);margin-right:8px">📦 ${r.productName || ''} • 🔢 ${fmt(r.qty)}</small>`
+            : `<small style="color:var(--danger);margin-right:8px">❌ ناموجود</small>`}
+        </div>
+        <small style="color:var(--muted)">${r.time}</small>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  c.innerHTML = html;
+}
+
+// ==================== MOVEMENTS ====================
+function renderMovements() {
+  const list = document.getElementById('movementsList');
+  if (!App.movements.length) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">📋</div>هنوز حرکتی ثبت نشده</div>';
+    return;
+  }
+  list.innerHTML = App.movements.slice(0, 80).map(m => {
+    const typeClass = m.qtyChange >= 0 ? 'type-in' : 'type-out';
+    const sign = m.qtyChange >= 0 ? '+' : '';
+    return `<div class="movement-item">
+      <div>
+        <span class="${typeClass}">${sign}${fmt(m.qtyChange)}</span>
+        <strong style="margin-right:6px">${m.productName}</strong>
+        <small style="color:var(--muted)">${m.companyName}</small>
+        ${m.note ? `<br><small style="color:var(--muted)">${m.note}</small>` : ''}
+      </div>
+      <div style="text-align:left;font-size:.72rem;color:var(--muted)">
+        ${m.time}<br>
+        موجودی: ${fmt(m.newQty)}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function clearMovements() {
+  if (!confirm('تاریخچه حرکات پاک شود؟')) return;
+  App.movements = [];
+  save();
+  renderMovements();
+  showToast('تاریخچه پاک شد');
+}
+
+// ==================== STORAGE ====================
+function updateStorageInfo() {
+  const data = JSON.stringify({
+    companies: App.companies,
+    products: App.products,
+    items: App.items,
+    scanned: App.scanned
+  });
+  const bytes = new Blob([data]).size;
+  const kb = (bytes / 1024).toFixed(2);
+  const mb = (bytes / 1024 / 1024).toFixed(3);
+  document.getElementById('storageUsed').textContent = bytes > 1024 * 1024 ? mb + ' MB' : kb + ' KB';
+  document.getElementById('storageItems').textContent = fmt(App.items.length);
+  const last = App.storageHistory[0];
+  document.getElementById('storageLastSave').textContent = last ? last.time : '-';
+
+  const pathEl = document.getElementById('storagePathText');
+  const pathDisplay = document.getElementById('storagePathDisplay');
+  if (App.fileHandle) {
+    pathEl.textContent = '📁 ' + App.fileHandle.name;
+    pathDisplay.classList.add('connected');
+    document.getElementById('storageFilePath').textContent = App.fileHandle.name;
+    document.getElementById('btnSaveToSame').style.display = 'inline-flex';
+  } else {
+    pathEl.textContent = 'هنوز فایلی انتخاب نشده';
+    pathDisplay.classList.remove('connected');
+    document.getElementById('storageFilePath').textContent = 'متصل نشده';
+    document.getElementById('btnSaveToSame').style.display = 'none';
+  }
+  renderStorageHistory();
+}
+
+async function saveToDevice() {
+  try {
+    if (window.showSaveFilePicker) {
+      App.fileHandle = await window.showSaveFilePicker({
+        suggestedName: 'warehouse-' + new Date().toISOString().slice(0, 10) + '.json',
+        types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
+      });
+      await saveToHandle();
+      addHistoryEntry('ذخیره روی دستگاه: ' + App.fileHandle.name, 'success');
+      updateStorageInfo();
+      showToast('✅ روی دستگاه ذخیره شد: ' + App.fileHandle.name);
+    } else {
+      exportJSON();
+      showToast('📥 فایل دانلود شد (مرورگر از ذخیره مستقیم پشتیبانی نمی‌کند)', 'warning');
+    }
+  } catch (e) {
+    if (e.name !== 'AbortError') {
+      console.error(e);
+      showToast('خطا: ' + e.message, 'error');
+    }
+  }
+}
+
+async function saveToHandle() {
+  if (!App.fileHandle) throw new Error('No file handle');
+  const writable = await App.fileHandle.createWritable();
+  await writable.write(JSON.stringify(getExportPayload(), null, 2));
+  await writable.close();
+  addHistoryEntry('ذخیره در فایل: ' + App.fileHandle.name, 'success');
+}
+
+async function loadFromDevice() {
+  try {
+    if (window.showOpenFilePicker) {
+      const [handle] = await window.showOpenFilePicker({
+        types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
+      });
+      const file = await handle.getFile();
+      const text = await file.text();
+      const data = JSON.parse(text);
+      applyImportedData(data, true);
+      App.fileHandle = handle;
+      addHistoryEntry('بارگذاری: ' + handle.name, 'success');
+      updateStorageInfo();
+      showToast('✅ داده‌ها بارگذاری شدند');
+    } else {
+      document.getElementById('importFile').click();
+    }
+  } catch (e) {
+    if (e.name !== 'AbortError') {
+      console.error(e);
+      showToast('خطا: ' + e.message, 'error');
+    }
+  }
+}
+
+function applyImportedData(data, askReplace = true) {
+  const replace = askReplace ? confirm('داده‌های فعلی جایگزین شوند؟\n(Cancel = ادغام)') : true;
+  if (replace) {
+    App.companies = data.companies || [];
+    App.products = data.products || [];
+    App.items = data.items || [];
+    App.scanned = data.scanned || [];
+    if (data.movements) App.movements = data.movements;
+    if (data.settings) Object.assign(App.settings, data.settings);
+  } else {
+    const existingIds = new Set(App.items.map(i => i.id));
+    (data.items || []).forEach(i => { if (!existingIds.has(i.id)) App.items.push(i); });
+    const cids = new Set(App.companies.map(c => c.id));
+    (data.companies || []).forEach(c => { if (!cids.has(c.id)) App.companies.push(c); });
+    const pids = new Set(App.products.map(p => p.id));
+    (data.products || []).forEach(p => { if (!pids.has(p.id)) App.products.push(p); });
+  }
+  save();
+  refreshSelects();
+  renderTree();
+  updateStats();
+  renderItems();
+}
+
+function clearFileHandle() {
+  if (!App.fileHandle) return showToast('فایلی متصل نیست', 'warning');
+  if (!confirm('قطع اتصال فایل؟')) return;
+  App.fileHandle = null;
+  updateStorageInfo();
+  addHistoryEntry('قطع اتصال فایل', 'warning');
+  showToast('اتصال قطع شد');
+}
+
+function exportJSON() {
+  const data = getExportPayload();
+  const uname = (App.users.find(u => u.id === App.currentUserId) || {}).name || 'user';
+  downloadBlob(JSON.stringify(data, null, 2), 'warehouse-' + uname + '-' + new Date().toISOString().slice(0, 10) + '.json', 'application/json;charset=utf-8');
+  addHistoryEntry('دانلود JSON', 'info');
+  showToast('📥 فایل دانلود شد');
+}
+
+function importJSONFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      applyImportedData(data, true);
+      addHistoryEntry('بارگذاری JSON', 'success');
+      updateStorageInfo();
+      showToast('✅ بارگذاری شد');
+    } catch (err) {
+      showToast('خطا در خواندن فایل: ' + err.message, 'error');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function exportBackup() {
+  const data = getExportPayload();
+  downloadBlob(JSON.stringify(data, null, 2), 'full-backup-' + new Date().toISOString().slice(0, 10) + '.json', 'application/json;charset=utf-8');
+  addHistoryEntry('پشتیبان کامل', 'success');
+  showToast('🗃️ پشتیبان دانلود شد');
+}
+
+function toggleAutoSave(type) {
+  if (type === 'browser') App.autoSaveBrowser = document.getElementById('autoSaveBrowser').checked;
+  else App.autoSaveDevice = document.getElementById('autoSaveDevice').checked;
+  save();
+  showToast('تنظیمات ذخیره شد');
+}
+
+function addHistoryEntry(action, type = 'info') {
+  App.storageHistory.unshift({
+    action, type, time: nowFa(), timestamp: Date.now()
+  });
+  if (App.storageHistory.length > 60) App.storageHistory = App.storageHistory.slice(0, 60);
+  try {
+    localStorage.setItem(storageKey(), JSON.stringify(getExportPayload()));
+  } catch (e) {}
+}
+
+function renderStorageHistory() {
+  const c = document.getElementById('storageHistory');
+  if (!App.storageHistory.length) {
+    c.innerHTML = '<div class="empty-state" style="padding:14px"><div class="icon">🕐</div>تاریخچه‌ای نیست</div>';
+    return;
+  }
+  const icons = { info: 'ℹ️', success: '✅', warning: '⚠️', danger: '❌' };
+  c.innerHTML = App.storageHistory.slice(0, 25).map(h => `
+    <div class="history-item">
+      <div><span style="margin-left:5px">${icons[h.type] || 'ℹ️'}</span><strong>${h.action}</strong></div>
+      <small style="color:var(--muted)">${h.time}</small>
+    </div>`).join('');
+}
+
+function clearHistory() {
+  if (!confirm('پاک کردن تاریخچه؟')) return;
+  App.storageHistory = [];
+  save();
+  updateStorageInfo();
+  showToast('تاریخچه پاک شد');
+}
+
+function clearAllData() {
+  if (!confirm('⚠️ تمام داده‌ها پاک خواهند شد!\nمطمئنید؟')) return;
+  if (!confirm('تأیید نهایی؟ این عمل غیرقابل بازگشت است.')) return;
+  App.companies = [];
+  App.products = [];
+  App.items = [];
+  App.scanned = [];
+  App.recentLookups = [];
+  App.movements = [];
+  save();
+  refreshSelects();
+  renderTree();
+  updateStats();
+  renderItems();
+  addHistoryEntry('پاک کردن همه', 'danger');
+  updateStorageInfo();
+  showToast('همه داده‌ها پاک شدند');
+}
+
+function resetToFactory() {
+  if (!confirm('بازنشانی کامل؟ داده کاربر فعلی پاک می‌شود.')) return;
+  try {
+    localStorage.removeItem(storageKey());
+    localStorage.removeItem('warehouseProV2');
+  } catch (e) {}
+  location.reload();
+}
+
+// ==================== SETTINGS ====================
+function loadSettingsUI() {
+  document.getElementById('settingLowThreshold').value = App.settings.lowThreshold;
+  document.getElementById('settingCurrency').value = App.settings.currency;
+  document.getElementById('settingBeep').checked = App.settings.beep;
+  document.getElementById('settingDarkDefault').checked = App.settings.darkDefault;
+}
+
+function saveSettings() {
+  App.settings.lowThreshold = parseInt(document.getElementById('settingLowThreshold').value) || 5;
+  App.settings.currency = document.getElementById('settingCurrency').value.trim() || 'تومان';
+  App.settings.beep = document.getElementById('settingBeep').checked;
+  App.settings.darkDefault = document.getElementById('settingDarkDefault').checked;
+  save();
+  updateStats();
+  showToast('تنظیمات ذخیره شد');
+}
+
+// ==================== EVENT BINDINGS ====================
+document.querySelectorAll('[data-nav]').forEach(btn => {
+  btn.addEventListener('click', () => showTab(btn.dataset.nav));
+});
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => showTab(tab.dataset.tab));
+});
+
+document.getElementById('btnScanTop').addEventListener('click', openScanModal);
+document.getElementById('btnDark').addEventListener('click', toggleDark);
+document.getElementById('btnHelp').addEventListener('click', () => {
+  showToast('از منوی پایین یا تب‌ها جابجا شوید • Ctrl+K جستجو • Ctrl+N ورود', 'info');
+});
+document.getElementById('btnScanQuick').addEventListener('click', openScanModal);
+document.getElementById('btnScanBottom').addEventListener('click', openScanModal);
+
+document.getElementById('btnAddCompany').addEventListener('click', addCompany);
+document.getElementById('btnAddProduct').addEventListener('click', addProduct);
+document.getElementById('treeSearch')?.addEventListener('input', () => renderTree());
+
+document.getElementById('btnAddItem').addEventListener('click', addItem);
+document.getElementById('btnClearEntry').addEventListener('click', clearEntry);
+document.getElementById('btnScanEntry').addEventListener('click', scanForEntry);
+document.getElementById('entryCompany').addEventListener('change', updateEntryProducts);
+
+document.getElementById('searchInput').addEventListener('input', renderItems);
+document.getElementById('filterCompany').addEventListener('change', renderItems);
+document.getElementById('filterStatus').addEventListener('change', renderItems);
+document.getElementById('btnExportCSV').addEventListener('click', exportCSV);
+document.getElementById('btnExportExcel').addEventListener('click', exportExcel);
+
+document.getElementById('btnStartScan').addEventListener('click', openScanModal);
+document.getElementById('btnCommitScan').addEventListener('click', commitScannedItems);
+document.getElementById('btnClearScanned').addEventListener('click', clearScanned);
+document.getElementById('btnExportScanned').addEventListener('click', exportScannedCSV);
+
+document.getElementById('btnLookupScan').addEventListener('click', openLookupScanner);
+document.getElementById('btnLookupFocus').addEventListener('click', () => document.getElementById('lookupManualInput').focus());
+document.getElementById('btnClearLookup').addEventListener('click', clearLookup);
+document.getElementById('btnLookupSearch').addEventListener('click', lookupBarcode);
+document.getElementById('lookupManualInput').addEventListener('keypress', e => { if (e.key === 'Enter') lookupBarcode(); });
+document.getElementById('btnStopLookup').addEventListener('click', stopLookupScanner);
+
+document.getElementById('btnClearMovements').addEventListener('click', clearMovements);
+
+document.getElementById('btnSaveToDevice').addEventListener('click', saveToDevice);
+document.getElementById('btnSaveToSame').addEventListener('click', () => {
+  if (App.fileHandle) saveToHandle().then(() => showToast('✅ ذخیره شد')).catch(e => showToast('خطا: ' + e.message, 'error'));
+});
+document.getElementById('btnLoadFromDevice').addEventListener('click', loadFromDevice);
+document.getElementById('btnClearHandle').addEventListener('click', clearFileHandle);
+document.getElementById('btnExportJSON').addEventListener('click', exportJSON);
+document.getElementById('btnImportTrigger').addEventListener('click', () => document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', e => {
+  if (e.target.files[0]) importJSONFile(e.target.files[0]);
+  e.target.value = '';
+});
+document.getElementById('btnBackup').addEventListener('click', exportBackup);
+document.getElementById('autoSaveBrowser').addEventListener('change', () => toggleAutoSave('browser'));
+document.getElementById('autoSaveDevice').addEventListener('change', () => toggleAutoSave('device'));
+document.getElementById('btnClearHistory').addEventListener('click', clearHistory);
+document.getElementById('btnClearAll').addEventListener('click', clearAllData);
+document.getElementById('btnReset').addEventListener('click', resetToFactory);
+
+document.getElementById('btnSaveSettings').addEventListener('click', saveSettings);
+
+document.getElementById('btnCloseScan').addEventListener('click', closeScanModal);
+document.getElementById('btnCloseScan2').addEventListener('click', closeScanModal);
+document.getElementById('btnAddManual').addEventListener('click', addManualBarcode);
+document.getElementById('manualBarcode').addEventListener('keypress', e => { if (e.key === 'Enter') addManualBarcode(); });
+document.getElementById('btnCommitFromModal').addEventListener('click', () => { commitScannedItems(); closeScanModal(); });
+document.getElementById('cameraSelect').addEventListener('change', switchCamera);
+
+document.getElementById('btnCloseEdit').addEventListener('click', closeEditModal);
+document.getElementById('btnCancelEdit').addEventListener('click', closeEditModal);
+document.getElementById('btnSaveEdit').addEventListener('click', saveEditedItem);
+
+document.getElementById('btnCloseFieldScan').addEventListener('click', closeFieldScanModal);
+
+document.getElementById('btnCloseAdjust').addEventListener('click', closeAdjustModal);
+document.getElementById('btnCancelAdjust').addEventListener('click', closeAdjustModal);
+document.getElementById('btnSaveAdjust').addEventListener('click', saveAdjust);
+
+// Event delegation
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-del-company]');
+  if (t) deleteCompany(t.dataset.delCompany);
+
+  const t2 = e.target.closest('[data-del-product]');
+  if (t2) deleteProduct(t2.dataset.delProduct);
+
+  const t3 = e.target.closest('[data-edit-item]');
+  if (t3) editItem(t3.dataset.editItem);
+
+  const t4 = e.target.closest('[data-del-item]');
+  if (t4) deleteItem(t4.dataset.delItem);
+
+  const t5 = e.target.closest('[data-inc-scan]');
+  if (t5) incScanned(t5.dataset.incScan);
+
+  const t6 = e.target.closest('[data-dec-scan]');
+  if (t6) decScanned(t6.dataset.decScan);
+
+  const t7 = e.target.closest('[data-del-scan]');
+  if (t7) delScanned(t7.dataset.delScan);
+
+  const t8 = e.target.closest('[data-lookup-barcode]');
+  if (t8) {
+    document.getElementById('lookupManualInput').value = t8.dataset.lookupBarcode;
+    lookupBarcode();
+  }
+
+  const t9 = e.target.closest('#btnScanEdit');
+  if (t9) scanForEdit();
+
+  const t10 = e.target.closest('[data-adjust-item]');
+  if (t10) openAdjustModal(t10.dataset.adjustItem);
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key === 'k') {
+    e.preventDefault();
+    document.getElementById('searchInput').focus();
+    showTab('inventory');
+  }
+  if (e.ctrlKey && e.key === 'n') {
+    e.preventDefault();
+    showTab('entry');
+  }
+  if (e.ctrlKey && e.key === 'l') {
+    e.preventDefault();
+    showTab('lookup');
+  }
+  if (e.key === 'Escape') {
+    closeScanModal();
+    stopLookupScanner();
+    closeEditModal();
+    closeFieldScanModal();
+    closeAdjustModal();
+  }
+});
+
+// ==================== INIT ====================
+loadUsers();
+loadData();
+document.getElementById('autoSaveBrowser').checked = App.autoSaveBrowser;
+document.getElementById('autoSaveDevice').checked = App.autoSaveDevice;
+
+try {
+  if (localStorage.getItem('darkMode') === '1' || App.settings.darkDefault) {
+    document.body.classList.add('dark');
+  }
+} catch (e) {}
+
+refreshSelects();
+renderTree();
+updateStats();
+updateScanCounter();
+updateStorageInfo();
+renderDashboardChart();
+renderLowStockAlert();
+renderUserSelect();
+
+document.getElementById('userSelect')?.addEventListener('change', e => switchUser(e.target.value));
+document.getElementById('btnUsers')?.addEventListener('click', openUsersModal);
+
+// ==================== PRICE COMPARE (اکالا / دیجی‌کالا) ====================
+const PRICE_FALLBACK = 'قیمت خودکار قابل دریافت نیست؛ برای مشاهده قیمت، صفحه جستجو را باز کنید.';
+
+function buildSearchLinks(name) {
+  const q = encodeURIComponent(name);
+  return {
+    okala: 'https://www.okala.com/mobileSearch?search_text=' + q,
+    digikala: 'https://www.digikala.com/search/?q=' + q
+  };
+}
+
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function faNum(s) {
+  return String(s).replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+}
+
+function priceDiff(store, ref) {
+  store = Number(store) || 0;
+  ref = (ref === null || ref === undefined || ref === '') ? NaN : Number(faNum(ref));
+  if (!isFinite(ref) || ref <= 0) return null;
+  const diff = store - ref;
+  return { diff, pct: diff / ref * 100 };
+}
+
+function fmtPct(n) {
+  const v = Number(n) || 0;
+  const s = v > 0 ? '+' : (v < 0 ? '-' : '');
+  return s + Math.abs(v).toLocaleString('fa-IR', { maximumFractionDigits: 2 }) + '٪';
+}
+
+function diffHtml(store, ref, label) {
+  const d = priceDiff(store, ref);
+  if (!d) return '';
+  const cls = d.diff > 0 ? 'diff-bad' : (d.diff < 0 ? 'diff-good' : 'diff-neutral');
+  const cap = d.diff > 0 ? 'گران‌تر از فروشگاه شما' : (d.diff < 0 ? 'ارزان‌تر از فروشگاه شما' : 'هم‌قیمت با فروشگاه شما');
+  const s = d.diff > 0 ? '+' : '';
+  return `<div class="${cls}"><div><strong>${label} — ${cap}</strong></div>
+    <div>اختلاف: ${s}${fmt(Math.abs(d.diff))} تومان &nbsp;|&nbsp; درصد: ${fmtPct(d.pct)}</div></div>`;
+}
+
+async function fetchDigikalaPrice(name) {
+  const url = 'https://api.digikala.com/v1/search/?q=' + encodeURIComponent(name);
+  const link = buildSearchLinks(name).digikala;
+  const ctrl = new AbortController();
+  const tm = setTimeout(() => ctrl.abort(), 10000);
+  try {
+    const res = await fetch(url, { signal: ctrl.signal, headers: { 'Accept': 'application/json' } });
+    if (!res.ok) return { found: false, price: null, status: PRICE_FALLBACK, url: link };
+    const j = await res.json();
+    const prods = (j && j.data && j.data.products) || [];
+    for (const p of prods) {
+      const v = ((p.default_variant || {}).price) || {};
+      if (v.selling_price) return { found: true, price: Number(v.selling_price), status: 'قیمت دریافت شد', url: link };
+    }
+    return { found: false, price: null, status: PRICE_FALLBACK, url: link };
+  } catch (e) {
+    return { found: false, price: null, status: PRICE_FALLBACK, url: link };
+  } finally { clearTimeout(tm); }
+}
+
+function getOrCreatePriceRecord(name, store, barcode) {
+  let rec = App.priceRecords.find(r => r.name === name);
+  const links = buildSearchLinks(name);
+  if (rec) {
+    rec.storePrice = store;
+    if (barcode) rec.barcode = barcode;
+  } else {
+    rec = {
+      id: uid(), name, barcode: barcode || '',
+      storePrice: store, okalaPrice: null, digikalaPrice: null,
+      refSource: '', checkDate: nowFa(), lastUpdate: nowFa(),
+      okalaUrl: links.okala, digikalaUrl: links.digikala
+    };
+    App.priceRecords.unshift(rec);
+  }
+  return rec;
+}
+
+function pushPriceHistory(rec) {
+  App.priceHistory.push({
+    productId: rec.id, date: nowFa(),
+    store: rec.storePrice, okala: rec.okalaPrice, digikala: rec.digikalaPrice
+  });
+  if (App.priceHistory.length > 1000) App.priceHistory = App.priceHistory.slice(-1000);
+}
+
+function refSourceOf(rec) {
+  const s = [];
+  if (rec.okalaPrice !== null && rec.okalaPrice !== undefined && rec.okalaPrice !== '') s.push('اکالا');
+  if (rec.digikalaPrice !== null && rec.digikalaPrice !== undefined && rec.digikalaPrice !== '') s.push('دیجی‌کالا');
+  return s.join('، ');
+}
+
+function siteCardHtml(rec, site) {
+  const isOkala = site === 'okala';
+  const price = isOkala ? rec.okalaPrice : rec.digikalaPrice;
+  const url = isOkala ? rec.okalaUrl : rec.digikalaUrl;
+  const label = isOkala ? 'اکالا' : 'دیجی‌کالا';
+  const has = price !== null && price !== undefined && price !== '';
+  let body = has
+    ? `<div class="price-val">${fmt(price)} <small>تومان</small></div>
+       <div class="price-status ok">✅ قیمت دریافت شد</div>${diffHtml(rec.storePrice, price, label)}`
+    : `<div class="price-val" style="color:var(--muted)">—</div>
+       <div class="price-status warn">${PRICE_FALLBACK}</div>`;
+  const manual = isOkala ? `<div class="manual-okala">
+      <input type="text" class="form-control" id="okalaManual_${rec.id}" placeholder="ثبت دستی قیمت اکالا (تومان)">
+      <button class="btn btn-sm btn-primary" onclick="setOkalaPrice('${rec.id}')">ثبت</button>
+    </div>` : '';
+  return `<div class="price-site"><h4>${label}</h4>${body}
+    <div class="price-actions">
+      <a class="price-link-btn" href="${url}" target="_blank" rel="noopener">🔗 باز کردن در ${label}</a>
+    </div>${manual}</div>`;
+}
+
+function renderPriceResult(rec) {
+  const wrap = document.getElementById('priceResult');
+  if (!wrap) return;
+  wrap.innerHTML = `<div class="price-record" style="background:var(--card)">
+    <div class="price-record-head">
+      <strong>${esc(rec.name)}</strong>
+      <span class="tag">فروشگاه: ${fmt(rec.storePrice)} تومان</span>
+    </div>
+    <div style="margin:6px 0;font-size:.78rem;color:var(--muted)">🕒 آخرین بررسی: ${esc(rec.lastUpdate)} | منبع: ${rec.refSource ? esc(rec.refSource) : '—'}</div>
+    <div class="price-row">${siteCardHtml(rec, 'okala')}${siteCardHtml(rec, 'digikala')}</div>
+    <div class="price-actions">
+      <button class="btn btn-sm btn-primary" onclick="reCheckPrice('${rec.id}')">🔄 بررسی مجدد قیمت</button>
+      <button class="btn btn-sm" onclick="showPriceHistory('${rec.id}')">📊 تاریخچه قیمت</button>
+      <button class="btn btn-sm btn-danger" onclick="deletePriceRecord('${rec.id}')">🗑️ حذف</button>
+    </div>
+  </div>`;
+  wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function searchPrices() {
+  const name = document.getElementById('priceName').value.trim();
+  const store = parseInt(faNum(document.getElementById('priceStore').value), 10) || 0;
+  const barcode = document.getElementById('priceBarcode').value.trim();
+  if (!name) { showToast('نام کالا را وارد کنید', 'error'); return; }
+  if (store <= 0) { showToast('قیمت فروشگاه را وارد کنید', 'error'); return; }
+  const btn = document.getElementById('btnSearchPrice');
+  btn.disabled = true; btn.textContent = '⏳ در حال جستجو…';
+  try {
+    const rec = getOrCreatePriceRecord(name, store, barcode);
+    rec.lastUpdate = nowFa();
+    const dk = await fetchDigikalaPrice(name);
+    rec.digikalaPrice = dk.price;
+    rec.digikalaFound = dk.found;
+    rec.digikalaStatus = dk.status;
+    rec.digikalaUrl = dk.url;
+    const ok = await fetchOkalaPrice(name);
+    rec.okalaPrice = ok.price;
+    rec.okalaStatus = ok.status;
+    rec.okalaUrl = ok.url;
+    rec.refSource = refSourceOf(rec);
+    pushPriceHistory(rec);
+    save();
+    renderPriceResult(rec);
+    renderPriceList();
+  } finally {
+    btn.disabled = false; btn.textContent = '🔎 جستجوی قیمت';
+  }
+}
+
+async function reCheckPrice(id) {
+  const rec = App.priceRecords.find(r => r.id === id);
+  if (!rec) { showToast('کالا پیدا نشد', 'error'); return; }
+  showToast('⏳ در حال بررسی مجدد دیجی‌کالا…', 'info');
+  const dk = await fetchDigikalaPrice(rec.name);
+  rec.digikalaPrice = dk.price;
+  rec.digikalaFound = dk.found;
+  rec.digikalaStatus = dk.status;
+  rec.digikalaUrl = dk.url;
+  const ok = await fetchOkalaPrice(rec.name);
+  rec.okalaPrice = ok.price;
+  rec.okalaStatus = ok.status;
+  rec.okalaUrl = ok.url;
+  rec.lastUpdate = nowFa();
+  rec.refSource = refSourceOf(rec);
+  pushPriceHistory(rec);
+  save();
+  renderPriceResult(rec);
+  renderPriceList();
+  showToast('بررسی مجدد انجام شد.');
+}
+
+function setOkalaPrice(id) {
+  const rec = App.priceRecords.find(r => r.id === id);
+  if (!rec) return;
+  const input = document.getElementById('okalaManual_' + id);
+  const raw = input ? input.value : '';
+  const v = parseInt(faNum(raw), 10);
+  if (!raw || isNaN(v) || v <= 0) { showToast('قیمت معتبر اکالا وارد کنید', 'error'); return; }
+  rec.okalaPrice = v;
+  rec.lastUpdate = nowFa();
+  rec.refSource = refSourceOf(rec);
+  pushPriceHistory(rec);
+  save();
+  renderPriceResult(rec);
+  renderPriceList();
+  showToast('قیمت اکالا ثبت شد ✅');
+}
+
+function deletePriceRecord(id) {
+  if (!confirm('این کالا و تاریخچه قیمت آن حذف شود؟')) return;
+  App.priceRecords = App.priceRecords.filter(r => r.id !== id);
+  App.priceHistory = (App.priceHistory || []).filter(h => h.productId !== id);
+  save();
+  const wrap = document.getElementById('priceResult');
+  if (wrap) wrap.innerHTML = '';
+  renderPriceList();
+  showToast('کالا حذف شد.');
+}
+
+function renderPriceList() {
+  const box = document.getElementById('priceList');
+  if (!box) return;
+  if (!App.priceRecords.length) {
+    box.innerHTML = '<p style="color:var(--muted)">هنوز کالایی بررسی نشده است.</p>';
+    return;
+  }
+  box.innerHTML = App.priceRecords.map(rec => {
+    const ok = rec.okalaPrice !== null && rec.okalaPrice !== undefined && rec.okalaPrice !== '';
+    const dk = rec.digikalaPrice !== null && rec.digikalaPrice !== undefined && rec.digikalaPrice !== '';
+    return `<div class="price-record">
+      <div class="price-record-head">
+        <strong>${esc(rec.name)}</strong>
+        <span class="tag">${fmt(rec.storePrice)} تومان</span>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:.78rem;margin-top:6px">
+        <span class="price-status ${ok ? 'ok' : 'warn'}">اکالا: ${ok ? fmt(rec.okalaPrice) : '—'}</span>
+        <span class="price-status ${dk ? 'ok' : 'warn'}">دیجی‌کالا: ${dk ? fmt(rec.digikalaPrice) : '—'}</span>
+      </div>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:4px">🕒 ${esc(rec.lastUpdate)} ${rec.refSource ? '| منبع: ' + esc(rec.refSource) : ''}</div>
+      <div class="price-actions">
+        <button class="btn btn-sm btn-primary" onclick="reCheckPrice('${rec.id}')">🔄 بررسی مجدد</button>
+        <a class="price-link-btn" href="${rec.okalaUrl}" target="_blank" rel="noopener">🔗 اکالا</a>
+        <a class="price-link-btn" href="${rec.digikalaUrl}" target="_blank" rel="noopener">🔗 دیجی‌کالا</a>
+        <button class="btn btn-sm" onclick="showPriceHistory('${rec.id}')">📊 تاریخچه</button>
+        <button class="btn btn-sm btn-danger" onclick="deletePriceRecord('${rec.id}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showPriceHistory(id) {
+  const rec = App.priceRecords.find(r => r.id === id);
+  if (!rec) return;
+  const rows = (App.priceHistory || []).filter(h => h.productId === id).slice().reverse();
+  const rowsHtml = rows.length
+    ? `<table class="price-table"><thead><tr><th>تاریخ</th><th>فروشگاه</th><th>اکالا</th><th>دیجی‌کالا</th></tr></thead><tbody>${
+        rows.map(h => `<tr><td>${esc(h.date)}</td><td>${h.store != null ? fmt(h.store) : '—'}</td><td>${h.okala != null ? fmt(h.okala) : '—'}</td><td>${h.digikala != null ? fmt(h.digikala) : '—'}</td></tr>`).join('')
+      }</tbody></table>`
+    : '<p style="color:var(--muted)">تاریخچه‌ای ثبت نشده است.</p>';
+  document.body.insertAdjacentHTML('beforeend', `
+    <div class="modal active" id="priceHistoryModal">
+      <div class="modal-content">
+        <div class="modal-header"><h3>📊 تاریخچه قیمت — ${esc(rec.name)}</h3><button class="close-btn" id="btnClosePriceHistory">×</button></div>
+        ${rowsHtml}
+      </div>
+    </div>`);
+  document.getElementById('btnClosePriceHistory').onclick = () => document.getElementById('priceHistoryModal')?.remove();
+  document.getElementById('priceHistoryModal').addEventListener('click', e => { if (e.target.id === 'priceHistoryModal') e.target.remove(); });
+}
+
+App.priceRecords = App.priceRecords || [];
+App.priceHistory = App.priceHistory || [];
+
+// ==================== OKALA: پروکسی اختیاری + ورود دستی ====================
+function getPriceProxy() {
+  try { return localStorage.getItem(storageKey() + '_priceProxy') || ''; } catch (e) { return ''; }
+}
+
+function savePriceProxy() {
+  const inp = document.getElementById('priceProxyUrl');
+  if (!inp) return;
+  const v = inp.value.trim();
+  try { localStorage.setItem(storageKey() + '_priceProxy', v); } catch (e) {}
+  showToast(v ? 'پروکسی ذخیره شد ✅' : 'پروکسی پاک شد');
+}
+
+// تلاش برای دریافت زندهٔ اکالا فقط از طریق پروکسی میانجی؛ بدون پروکسی همان پیام جایگزین
+async function fetchOkalaPrice(name) {
+  const link = buildSearchLinks(name).okala;
+  const proxy = getPriceProxy();
+  if (!proxy) return { found: false, price: null, status: PRICE_FALLBACK, url: link };
+  const target = 'https://www.okala.com/mobileSearch?search_text=' + encodeURIComponent(name);
+  const ctrl = new AbortController();
+  const tm = setTimeout(() => ctrl.abort(), 10000);
+  try {
+    const res = await fetch(proxy + '?url=' + encodeURIComponent(target), { signal: ctrl.signal });
+    if (!res.ok) return { found: false, price: null, status: PRICE_FALLBACK, url: link };
+    const text = await res.text();
+    const ct = (res.headers.get('content-type') || '').toLowerCase();
+    if (ct.includes('json') || text.trim().startsWith('{')) {
+      let j;
+      try { j = JSON.parse(text); } catch (e) { j = null; }
+      const price = j && (j.price || j.sellingPrice || (j.data && (j.data.price || j.data.sellingPrice)));
+      if (price) return { found: true, price: Number(price), status: 'قیمت دریافت شد', url: link };
+    }
+    return { found: false, price: null, status: PRICE_FALLBACK, url: link };
+  } catch (e) {
+    return { found: false, price: null, status: PRICE_FALLBACK, url: link };
+  } finally { clearTimeout(tm); }
+}
+
+// ورود دستی قیمت اکالا به‌صورت گروهی: هر خط «نام کالا | قیمت»
+function importOkalaPrices() {
+  const ta = document.getElementById('priceImportText');
+  if (!ta) return;
+  const text = ta.value.trim();
+  if (!text) { showToast('متن ورودی خالی است', 'error'); return; }
+  let imported = 0, created = 0;
+  for (const rawLine of text.split('\n')) {
+    const line = rawLine.trim();
+    if (!line) continue;
+    const parts = line.split(/[|،,;\t]/).map(s => s.trim()).filter(Boolean);
+    if (parts.length < 2) continue;
+    const name = parts[0];
+    const price = parseInt(faNum(parts[1]), 10);
+    if (!name || !price || isNaN(price) || price <= 0) continue;
+    let rec = App.priceRecords.find(r => r.name === name);
+    if (!rec) { rec = getOrCreatePriceRecord(name, 0, ''); created++; }
+    rec.okalaPrice = price;
+    rec.lastUpdate = nowFa();
+    rec.refSource = refSourceOf(rec);
+    pushPriceHistory(rec);
+    imported++;
+  }
+  if (!imported) { showToast('هیچ ردیف معتبری پیدا نشد (فرمت: نام کالا | قیمت)', 'error'); return; }
+  save();
+  const wrap = document.getElementById('priceResult');
+  if (wrap) wrap.innerHTML = '';
+  renderPriceList();
+  showToast(imported + ' ردیف وارد شد (' + created + ' کالای جدید)');
+}
+
+setTimeout(() => {
+  const u = App.users.find(x => x.id === App.currentUserId);
+  showToast('👋 آماده | کاربر: ' + (u ? u.name : 'مدیر') + ' | v' + APP_VERSION, 'info');
+}, 400);
+</script>
+</body>
+</html>
